@@ -241,14 +241,20 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 const ADMIN_ROLE = "Admin";
+const BOT_ACCESS_ROLE = "botAccess";
 
 // Default AI context
 let contextPrompt = "You are a helpful assistant that provides concise initial answers.";
 
 // ==================== Helpers ====================
-function isAdmin(member) {
+function isAdministrator(member) {
   if (!member) return false;
   return member.permissions.has(PermissionsBitField.Flags.Administrator);
+}
+
+function hasBotAccess(member) {
+  if (!member) return false;
+  return isAdministrator(member) || member.roles.cache.some(role => role.name === BOT_ACCESS_ROLE);
 }
 
 function splitMessage(message) {
@@ -1026,7 +1032,8 @@ client.on("interactionCreate", async (interaction) => {
 
   const channel = interaction.channel;
   const perms = botPermsIn(channel);
-  const isUserAdmin = isAdmin(interaction.member);
+  const isUserAdmin = isAdministrator(interaction.member);
+  const canUseBot = hasBotAccess(interaction.member);
 
   // Help Command
   if (interaction.commandName === "help") {
@@ -1034,12 +1041,12 @@ client.on("interactionCreate", async (interaction) => {
 \`\`\`
 📘 Available Commands
 
-AI:
+AI (Bot Access or Admin):
 !chat <message>                → Ask AI via AI (no context)
 /setcontext <text>             → Update AI response behavior (Admin)
 /getcontext                    → Get AI context (Admin)
-/summarize <amount>            → Summarize recent messages (Admin)
-/askquestion <question>          → Ask AI a question
+/summarize <amount>            → Summarize recent messages (Bot Access or Admin)
+/askquestion <question>          → Ask AI a question (Bot Access or Admin)
 
 Moderation (Admin Only):
 /kick <user> [reason]          → Kick a user
@@ -1064,7 +1071,7 @@ Moderation (Admin Only):
 /senddm <user> <message>       → Send a DM to a user
 /verify usr                    → Add the "Students" role to a user \`\`\`
 \`\`\`
-Utility & Fun:
+Utility & Fun (Bot Access or Admin):
 !help                          → Show this help message
 /ping                          → Check bot latency
 /userinfo [user]               → Display user info
@@ -1086,8 +1093,13 @@ Utility & Fun:
     return;
   }
 
+  // Bot Access check for all commands (except 'help')
+  if (!canUseBot) {
+    return interaction.reply({ content: `❌ You need the "${BOT_ACCESS_ROLE}" role or Administrator permissions to use this bot.`, ephemeral: true });
+  }
+
   // Admin-only slash commands
-  const adminCommands = ["setcontext", "getcontext", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "delete", "deleteall", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify", "summarize"];
+  const adminCommands = ["setcontext", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "delete", "deleteall", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify"];
   if (adminCommands.includes(interaction.commandName) && !isUserAdmin) {
     return interaction.reply({ content: "❌ You don’t have permission to use this command.", ephemeral: true });
   }
@@ -1100,9 +1112,6 @@ Utility & Fun:
       return interaction.reply({ content: "✅ AI context updated successfully!", ephemeral: true });
     }
     case "getcontext": {
-  if (!isUserAdmin) {
-    return interaction.reply({ content: "❌ You don’t have permission to use this command.", ephemeral: true });
-  }
   return interaction.reply({ content: `✅ The current AI context is:\n\`\`\`${contextPrompt}\`\`\``, ephemeral: true });
 }
     case "addrole": {
@@ -1485,12 +1494,6 @@ Utility & Fun:
       }
       break;
     }
-    case "getcontext": {
-      if (!isUserAdmin) {
-        return interaction.reply({ content: "❌ You don’t have permission to use this command.", ephemeral: true });
-      }
-      return interaction.reply({ content: `✅ The current AI context is:\n\`\`\`${contextPrompt}\`\`\``, ephemeral: true });
-    }
     case "askquestion": {
       await interaction.deferReply();
       const question = interaction.options.getString("question");
@@ -1638,11 +1641,11 @@ client.on("messageCreate", async (message) => {
 
   const args = message.content.trim().split(/\s+/);
   const command = args.shift()?.toLowerCase();
-  const isCommandAllowed = isAdmin(message.member);
+  const isCommandAllowed = hasBotAccess(message.member);
   
   // Admin check for legacy '!' commands (excluding !chat and !help)
   if (command !== "!chat" && command !== "!help" && command?.startsWith("!")) {
-    if (!isCommandAllowed) {
+    if (!isAdministrator(message.member)) {
       return message.channel.send("❌ You don’t have permission to use this command.");
     }
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/` instead.");
@@ -1655,12 +1658,12 @@ client.on("messageCreate", async (message) => {
 \`\`\`
 📘 Available Commands
 
-AI:
+AI (Bot Access or Admin):
 !chat <message>                → Ask AI via AI (no context)
 /setcontext <text>             → Update AI response behavior (Admin)
 /getcontext                    → Get AI context (Admin)
-/summarize <amount>            → Summarize recent messages (Admin)
-/askquestion <question>          → Ask AI a question
+/summarize <amount>            → Summarize recent messages (Bot Access or Admin)
+/askquestion <question>          → Ask AI a question (Bot Access or Admin)
 
 Moderation (Admin Only):
 /kick <user> [reason]          → Kick a user
@@ -1685,7 +1688,7 @@ Moderation (Admin Only):
 /senddm <user> <message>       → Send a DM to a user
 /verify usr                    → Add the "Students" role to a user
 
-Utility & Fun:
+Utility & Fun (Bot Access or Admin):
 !help                          → Show this help message
 /ping                          → Check bot latency
 /userinfo [user]               → Display user info
@@ -1703,6 +1706,9 @@ Utility & Fun:
 
   // Chat via Gemini (Corrected)
   if (command === "!chat") {
+    if (!isCommandAllowed) {
+      return message.channel.send(`❌ You need the "${BOT_ACCESS_ROLE}" role or Administrator permissions to use this bot.`);
+    }
     const userMention = message.mentions.users.first();
     const channelMention = message.mentions.channels.first();
     
