@@ -1063,53 +1063,16 @@ client.on("interactionCreate", async (interaction) => {
       // Existing commands
       case "help": {
         try {
-          let helpMessage = `
-\`\`\`
-📘 Available Commands
+          const aiCommands = `\n\`\`\`\nAI Commands:\n/setcontext <text>             → Update AI response behavior\n/getcontext                    → Get AI context\n/summarize <amount>            → Summarize recent messages\n/askquestion <question>          → Ask AI a question\n\`\`\`\n`;
 
-AI:
-/setcontext <text>             → Update AI response behavior
-/getcontext                    → Get AI context
-/summarize <amount>            → Summarize recent messages
-/askquestion <question>          → Ask AI a question
+          const moderationCommands = `\n\`\`\`\nModeration Commands:\n/kick <user> [reason]          → Kick a user\n/ban <user> [reason]           → Ban a user\n/timeout <user> <duration>     → Time out a user for a duration\n/untimeout <user>              → Remove a timeout\n/warn <user> <reason>          → Warn a user\n/nick <user> <nickname>        → Change a user\'s nickname\n/slowmode <duration>           → Set channel slowmode\n/lock                          → Lock a channel\n/unlock                        → Unlock a channel\n/delete <amount>               → Delete 1–100 recent messages\n/deleteall                     → Purge recent messages\n/addrole <role> <user>         → Assign a role to a user\n/removerole <role> <user>      → Remove a role from a user\n/createrole <name>             → Create a new role\n/deleterole <name>             → Delete a role\n/renamerole <old> <new>        → Rename a role\n/createchannel <name>          → Create a text channel\n/deletechannel <#channel>      → Delete a text channel\n/createprivatechannel <user>   → Private channel for a user\n/senddm <user> <message>       → Send a DM to a user\n/verify usr                    → Add the \"Students\" role to a user\n\`\`\`\n`;
 
-Moderation:
-/kick <user> [reason]          → Kick a user
-/ban <user> [reason]           → Ban a user
-/timeout <user> <duration>     → Time out a user for a duration
-/untimeout <user>              → Remove a timeout
-/warn <user> <reason>          → Warn a user
-/nick <user> <nickname>        → Change a user's nickname
-/slowmode <duration>           → Set channel slowmode
-/lock                          → Lock a channel
-/unlock                        → Unlock a channel
-/delete <amount>               → Delete 1–100 recent messages
-/deleteall                     → Purge recent messages
-/addrole <role> <user>         → Assign a role to a user
-/removerole <role> <user>      → Remove a role from a user
-/createrole <name>             → Create a new role
-/deleterole <name>             → Delete a role
-/renamerole <old> <new>        → Rename a role
-/createchannel <name>          → Create a text channel
-/deletechannel <#channel>      → Delete a text channel
-/createprivatechannel <user>   → Private channel for a user
-/senddm <user> <message>       → Send a DM to a user
-/verify usr                    → Add the "Students" role to a user
-\`\`\`
+          const utilityFunCommands = `\n\`\`\`\nUtility & Fun Commands:\n/help                          → Show this help message\n/ping                          → Check bot latency\n/userinfo [user]               → Display user info\n/serverinfo                    → Display server info\n/avatar [user]                 → Get a user\'s avatar\n/embed <title> <desc> [color]  → Send a custom embed\n/poll <question>               → Create a yes/no poll\n/8ball <question>              → Ask the 8-ball\n/randomfact                    → Get a random fact\n\`\`\`\n`;
 
-\`\`\`Utility & Fun:
-/help                          → Show this help message
-/ping                          → Check bot latency
-/userinfo [user]               → Display user info
-/serverinfo                    → Display server info
-/avatar [user]                 → Get a user's avatar
-/embed <title> <desc> [color]  → Send a custom embed
-/poll <question>               → Create a yes/no poll
-/8ball <question>              → Ask the 8-ball
-/randomfact                    → Get a random fact
-\`\`\`
-`;
-          splitMessage(helpMessage).forEach((chunk) => interaction.reply({ content: chunk, ephemeral: true }));
+          await interaction.reply({ content: "📘 **Available Commands**", ephemeral: true });
+          await interaction.followUp({ content: aiCommands, ephemeral: true });
+          await interaction.followUp({ content: moderationCommands, ephemeral: true });
+          await interaction.followUp({ content: utilityFunCommands, ephemeral: true });
           return;
         } catch (err) {
           console.error("Error sending help message:", err);
@@ -1711,24 +1674,26 @@ client.on("messageCreate", async (message) => {
   // Help
   if (command === "!help") {
     try {
-      let helpMessage = `
+      const aiCommands = `
 \`\`\`
-📘 Available Commands
-
-AI:
+AI Commands:
 !chat <message>                → Ask AI via AI (no context)
 /setcontext <text>             → Update AI response behavior
 /getcontext                    → Get AI context
 /summarize <amount>            → Summarize recent messages
 /askquestion <question>          → Ask AI a question
+\`\`\`
+`;
 
-Moderation:
+      const moderationCommands = `
+\`\`\`
+Moderation Commands:
 /kick <user> [reason]          → Kick a user
 /ban <user> [reason]           → Ban a user
 /timeout <user> <duration>     → Time out a user for a duration
 /untimeout <user>              → Remove a timeout
 /warn <user> <reason>          → Warn a user
-/nick <user> <nickname>        → Change a user's nickname
+/nick <user> <nickname>        → Change a user\'s nickname
 /slowmode <duration>           → Set channel slowmode
 /lock                          → Lock a channel
 /unlock                        → Unlock a channel
@@ -1745,21 +1710,27 @@ Moderation:
 /senddm <user> <message>       → Send a DM to a user
 /verify usr                    → Add the "Students" role to a user
 \`\`\`
+`;
 
-\`\`\`Utility & Fun:
+      const utilityFunCommands = `
+\`\`\`
+Utility & Fun Commands:
 !help                          → Show this help message
 /ping                          → Check bot latency
 /userinfo [user]               → Display user info
 /serverinfo                    → Display server info
-/avatar [user]                 → Get a user's avatar
+/avatar [user]                 → Get a user\'s avatar
 /embed <title> <desc> [color]  → Send a custom embed
 /poll <question>               → Create a yes/no poll
 /8ball <question>              → Ask the 8-ball
 /randomfact                    → Get a random fact
 \`\`\`
 `;
-      // Fix: Use the existing splitMessage helper to break the long string.
-      splitMessage(helpMessage).forEach((msg) => message.channel.send(msg));
+
+      await message.channel.send("📘 **Available Commands**");
+      await message.channel.send(aiCommands);
+      await message.channel.send(moderationCommands);
+      await message.channel.send(utilityFunCommands);
     } catch (err) {
       console.error("Error sending help message:", err);
       message.channel.send("❌ Failed to send help message.");
