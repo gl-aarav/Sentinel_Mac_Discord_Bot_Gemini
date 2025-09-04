@@ -748,7 +748,8 @@ Moderation (Admin Only):
 /senddm <user> <message>       → Send a DM to a user
 /verify usr                    → Add the "Students" role to a user \`\`\`
 
-\`\`\`Utility & Fun (Bot Access or Admin):
+\`\`\`
+Utility & Fun (Bot Access or Admin):
 !help                          → Show this help message
 /ping                          → Check bot latency
 /userinfo [user]               → Display user info
