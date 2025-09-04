@@ -220,6 +220,7 @@ const {
   Routes,
   SlashCommandBuilder,
   Partials,
+  MessageFlags,
 } = require("discord.js");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
@@ -699,7 +700,7 @@ client.on("threadCreate", async (thread) => {
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   if (!interaction.inGuild()) {
-    return interaction.reply({ content: "❌ This command can only be used in servers.", ephemeral: true });
+    return interaction.reply({ content: "❌ This command can only be used in servers.", flags: [MessageFlags.Ephemeral] });
   }
 
   const channel = interaction.channel;
@@ -756,24 +757,24 @@ Utility & Fun (Bot Access or Admin):
 \`\`\`
 `;
     // Fix: Defer reply and split the message to avoid character limit issues
-    await interaction.deferReply({ ephemeral: true });
+    await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
     const helpChunks = splitMessage(helpMessage);
     await interaction.editReply({ content: helpChunks[0] });
     for (let i = 1; i < helpChunks.length; i++) {
-        await interaction.followUp({ content: helpChunks[i], ephemeral: true });
+        await interaction.followUp({ content: helpChunks[i], flags: [MessageFlags.Ephemeral] });
     }
     return;
   }
 
   // Bot Access check for all commands (except 'help')
   if (!canUseBot) {
-    return interaction.reply({ content: `❌ You need the "${BOT_ACCESS_ROLE}" role or Administrator permissions to use this bot.`, ephemeral: true });
+    return interaction.reply({ content: `❌ You need the "${BOT_ACCESS_ROLE}" role or Administrator permissions to use this bot.`, flags: [MessageFlags.Ephemeral] });
   }
 
   // Admin-only slash commands
   const adminCommands = ["setcontext", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "delete", "deleteall", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify"];
   if (adminCommands.includes(interaction.commandName) && !isUserAdmin) {
-    return interaction.reply({ content: "❌ You don't have permission to use this command.", ephemeral: true });
+    return interaction.reply({ content: "❌ You don't have permission to use this command.", flags: [MessageFlags.Ephemeral] });
   }
 
   switch (interaction.commandName) {
@@ -781,76 +782,76 @@ Utility & Fun (Bot Access or Admin):
     case "setcontext": {
       const newContext = interaction.options.getString("text");
       contextPrompt = newContext;
-      return interaction.reply({ content: "✅ AI context updated successfully!", ephemeral: true });
+      return interaction.reply({ content: "✅ AI context updated successfully!", flags: [MessageFlags.Ephemeral] });
     }
     case "getcontext": {
-  return interaction.reply({ content: `✅ The current AI context is:\n\`\`\`${contextPrompt}\`\`\``, ephemeral: true });
+  return interaction.reply({ content: `✅ The current AI context is:\n\`\`\`${contextPrompt}\`\`\``, flags: [MessageFlags.Ephemeral] });
 }
     case "addrole": {
       const role = interaction.options.getRole("role");
       const member = interaction.options.getMember("user");
-      if (!role || !member) return interaction.reply({ content: "❌ Role or user not found.", ephemeral: true });
+      if (!role || !member) return interaction.reply({ content: "❌ Role or user not found.", flags: [MessageFlags.Ephemeral] });
       if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {
-        return interaction.reply({ content: "❌ You cannot add a role higher or equal to your own.", ephemeral: true });
+        return interaction.reply({ content: "❌ You cannot add a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });
       }
       try {
         await member.roles.add(role);
-        return interaction.reply({ content: `✅ Added ${role.name} to ${member.user.tag}.`, ephemeral: true });
+        return interaction.reply({ content: `✅ Added ${role.name} to ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: `❌ Failed to add the role to ${member.user.tag}.`, ephemeral: true });
+        return interaction.reply({ content: `❌ Failed to add the role to ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });
       }
     }
     case "removerole": {
       const role = interaction.options.getRole("role");
       const member = interaction.options.getMember("user");
-      if (!role || !member) return interaction.reply({ content: "❌ Role or user not found.", ephemeral: true });
+      if (!role || !member) return interaction.reply({ content: "❌ Role or user not found.", flags: [MessageFlags.Ephemeral] });
       if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {
-        return interaction.reply({ content: "❌ You cannot remove a role higher or equal to your own.", ephemeral: true });
+        return interaction.reply({ content: "❌ You cannot remove a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });
       }
       try {
         await member.roles.remove(role);
-        return interaction.reply({ content: `✅ Removed ${role.name} from ${member.user.tag}.`, ephemeral: true });
+        return interaction.reply({ content: `✅ Removed ${role.name} from ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: `❌ Failed to remove the role from ${member.user.tag}.`, ephemeral: true });
+        return interaction.reply({ content: `❌ Failed to remove the role from ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });
       }
     }
     case "createrole": {
       const roleName = interaction.options.getString("name");
       try {
         await interaction.guild.roles.create({ name: roleName });
-        return interaction.reply({ content: `✅ Role "${roleName}" created.`, ephemeral: true });
+        return interaction.reply({ content: `✅ Role "${roleName}" created.`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to create role.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to create role.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "deleterole": {
       const role = interaction.options.getRole("name");
       if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {
-        return interaction.reply({ content: "❌ You cannot delete a role higher or equal to your own.", ephemeral: true });
+        return interaction.reply({ content: "❌ You cannot delete a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });
       }
       try {
         await role.delete();
-        return interaction.reply({ content: `✅ Role "${role.name}" deleted.`, ephemeral: true });
+        return interaction.reply({ content: `✅ Role "${role.name}" deleted.`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: `❌ Failed to delete role "${role.name}".`, ephemeral: true });
+        return interaction.reply({ content: `❌ Failed to delete role "${role.name}".`, flags: [MessageFlags.Ephemeral] });
       }
     }
     case "renamerole": {
       const oldRole = interaction.options.getRole("old_name");
       const newName = interaction.options.getString("new_name");
       if (interaction.member.roles.highest.comparePositionTo(oldRole) <= 0) {
-        return interaction.reply({ content: "❌ You cannot rename a role higher or equal to your own.", ephemeral: true });
+        return interaction.reply({ content: "❌ You cannot rename a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });
       }
       try {
         await oldRole.setName(newName);
-        return interaction.reply({ content: `✅ Renamed "${oldRole.name}" to "${newName}".`, ephemeral: true });
+        return interaction.reply({ content: `✅ Renamed "${oldRole.name}" to "${newName}".`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to rename the role.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to rename the role.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "createchannel": {
@@ -860,20 +861,20 @@ Utility & Fun (Bot Access or Admin):
           name,
           type: ChannelType.GuildText,
         });
-        return interaction.reply({ content: `✅ Channel created: ${ch.toString()}`, ephemeral: true });
+        return interaction.reply({ content: `✅ Channel created: ${ch.toString()}`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to create channel.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to create channel.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "deletechannel": {
       const ch = interaction.options.getChannel("channel");
       try {
         await ch.delete();
-        return interaction.reply({ content: `✅ Channel deleted: ${ch.name}`, ephemeral: true });
+        return interaction.reply({ content: `✅ Channel deleted: ${ch.name}`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to delete channel.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to delete channel.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "createprivatechannel": {
@@ -908,10 +909,10 @@ Utility & Fun (Bot Access or Admin):
           type: ChannelType.GuildText,
           permissionOverwrites: overwrites,
         });
-        return interaction.reply({ content: `✅ Private channel created: ${privateCh.toString()}`, ephemeral: true });
+        return interaction.reply({ content: `✅ Private channel created: ${privateCh.toString()}`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to create private channel.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to create private channel.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "senddm": {
@@ -919,35 +920,35 @@ Utility & Fun (Bot Access or Admin):
       const dmMessage = interaction.options.getString("message");
       try {
         await member.send(dmMessage);
-        return interaction.reply({ content: `✅ Sent DM to ${member.user.tag}`, ephemeral: true });
+        return interaction.reply({ content: `✅ Sent DM to ${member.user.tag}`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: `❌ Could not send DM to ${member.user.tag}. They might have DMs disabled.`, ephemeral: true });
+        return interaction.reply({ content: `❌ Could not send DM to ${member.user.tag}. They might have DMs disabled.`, flags: [MessageFlags.Ephemeral] });
       }
     }
     case "delete": {
       if (!perms.has(PermissionsBitField.Flags.ManageMessages) || !perms.has(PermissionsBitField.Flags.ReadMessageHistory)) {
         return interaction.reply({
           content: "❌ I need **Manage Messages** and **Read Message History** in this channel.",
-          ephemeral: true,
+          flags: [MessageFlags.Ephemeral],
         });
       }
       const amount = interaction.options.getInteger("amount");
       if (amount < 1 || amount > 100) {
         return interaction.reply({
           content: "⚠️ Please provide a number between **1** and **100**.",
-          ephemeral: true,
+          flags: [MessageFlags.Ephemeral],
         });
       }
       try {
         const deleted = await channel.bulkDelete(amount, true);
         await interaction.reply({
           content: `✅ Deleted **${deleted.size}** message(s) in ${channel}.`,
-          ephemeral: true,
+          flags: [MessageFlags.Ephemeral],
         });
       } catch (err) {
         console.error(err);
-        await interaction.reply({ content: "❌ Failed to delete messages.", ephemeral: true });
+        await interaction.reply({ content: "❌ Failed to delete messages.", flags: [MessageFlags.Ephemeral] });
       }
       break;
     }
@@ -955,11 +956,11 @@ Utility & Fun (Bot Access or Admin):
       if (!perms.has(PermissionsBitField.Flags.ManageMessages) || !perms.has(PermissionsBitField.Flags.ReadMessageHistory)) {
         return interaction.reply({
           content: "❌ I need **Manage Messages** and **Read Message History** in this channel.",
-          ephemeral: true,
+          flags: [MessageFlags.Ephemeral],
         });
       }
 
-      await interaction.deferReply({ ephemeral: true });
+      await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 
       const FOURTEEN_DAYS = 14 * 24 * 60 * 60 * 1000;
       let totalDeleted = 0;
@@ -1013,11 +1014,11 @@ Utility & Fun (Bot Access or Admin):
       const roleName = "Students";
       const role = interaction.guild.roles.cache.find(r => r.name === roleName);
       if (!role) {
-        await interaction.reply({ content: `❌ Role "**${roleName}**" not found.`, ephemeral: true });
+        await interaction.reply({ content: `❌ Role "**${roleName}**" not found.`, flags: [MessageFlags.Ephemeral] });
         return;
       }
       if (!member) {
-        await interaction.reply({ content: `❌ User not found.`, ephemeral: true });
+        await interaction.reply({ content: `❌ User not found.`, flags: [MessageFlags.Ephemeral] });
         return;
       }
       try {
@@ -1025,7 +1026,7 @@ Utility & Fun (Bot Access or Admin):
         await interaction.reply({ content: `✅ Added the "**Students**" role to ${member.user.username}.` });
       } catch (err) {
         console.error(err);
-        await interaction.reply({ content: `❌ Failed to add the role to ${member.user.username}.`, ephemeral: true });
+        await interaction.reply({ content: `❌ Failed to add the role to ${member.user.username}.`, flags: [MessageFlags.Ephemeral] });
       }
       break;
     }
@@ -1034,117 +1035,117 @@ Utility & Fun (Bot Access or Admin):
     case "kick": {
       const user = interaction.options.getMember("user");
       const reason = interaction.options.getString("reason") || "No reason provided.";
-      if (!user) return interaction.reply({ content: "❌ User not found.", ephemeral: true });
-      if (user.id === interaction.user.id) return interaction.reply({ content: "❌ You can't kick yourself.", ephemeral: true });
-      if (user.roles.highest.position >= interaction.member.roles.highest.position) return interaction.reply({ content: "❌ You cannot kick a user with a higher or equal role.", ephemeral: true });
+      if (!user) return interaction.reply({ content: "❌ User not found.", flags: [MessageFlags.Ephemeral] });
+      if (user.id === interaction.user.id) return interaction.reply({ content: "❌ You can't kick yourself.", flags: [MessageFlags.Ephemeral] });
+      if (user.roles.highest.position >= interaction.member.roles.highest.position) return interaction.reply({ content: "❌ You cannot kick a user with a higher or equal role.", flags: [MessageFlags.Ephemeral] });
       try {
         await user.kick(reason);
-        return interaction.reply({ content: `✅ Kicked ${user.user.tag}. Reason: ${reason}`, ephemeral: true });
+        return interaction.reply({ content: `✅ Kicked ${user.user.tag}. Reason: ${reason}`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to kick user.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to kick user.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "ban": {
       const user = interaction.options.getMember("user");
       const reason = interaction.options.getString("reason") || "No reason provided.";
-      if (!user) return interaction.reply({ content: "❌ User not found.", ephemeral: true });
-      if (user.id === interaction.user.id) return interaction.reply({ content: "❌ You can't ban yourself.", ephemeral: true });
-      if (user.roles.highest.position >= interaction.member.roles.highest.position) return interaction.reply({ content: "❌ You cannot ban a user with a higher or equal role.", ephemeral: true });
+      if (!user) return interaction.reply({ content: "❌ User not found.", flags: [MessageFlags.Ephemeral] });
+      if (user.id === interaction.user.id) return interaction.reply({ content: "❌ You can't ban yourself.", flags: [MessageFlags.Ephemeral] });
+      if (user.roles.highest.position >= interaction.member.roles.highest.position) return interaction.reply({ content: "❌ You cannot ban a user with a higher or equal role.", flags: [MessageFlags.Ephemeral] });
       try {
         await user.ban({ reason });
-        return interaction.reply({ content: `✅ Banned ${user.user.tag}. Reason: ${reason}`, ephemeral: true });
+        return interaction.reply({ content: `✅ Banned ${user.user.tag}. Reason: ${reason}`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to ban user.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to ban user.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "timeout": {
       const user = interaction.options.getMember("user");
       const duration = interaction.options.getInteger("duration");
       const reason = interaction.options.getString("reason") || "No reason provided.";
-      if (!user) return interaction.reply({ content: "❌ User not found.", ephemeral: true });
-      if (user.id === interaction.user.id) return interaction.reply({ content: "❌ You can't time out yourself.", ephemeral: true });
-      if (user.roles.highest.position >= interaction.member.roles.highest.position) return interaction.reply({ content: "❌ You cannot time out a user with a higher or equal role.", ephemeral: true });
-      if (duration < 1 || duration > 28 * 24 * 60) return interaction.reply({ content: "❌ Duration must be between 1 minute and 28 days.", ephemeral: true });
+      if (!user) return interaction.reply({ content: "❌ User not found.", flags: [MessageFlags.Ephemeral] });
+      if (user.id === interaction.user.id) return interaction.reply({ content: "❌ You can't time out yourself.", flags: [MessageFlags.Ephemeral] });
+      if (user.roles.highest.position >= interaction.member.roles.highest.position) return interaction.reply({ content: "❌ You cannot time out a user with a higher or equal role.", flags: [MessageFlags.Ephemeral] });
+      if (duration < 1 || duration > 28 * 24 * 60) return interaction.reply({ content: "❌ Duration must be between 1 minute and 28 days.", flags: [MessageFlags.Ephemeral] });
       try {
         await user.timeout(duration * 60 * 1000, reason);
-        return interaction.reply({ content: `✅ Timed out ${user.user.tag} for ${duration} minutes. Reason: ${reason}`, ephemeral: true });
+        return interaction.reply({ content: `✅ Timed out ${user.user.tag} for ${duration} minutes. Reason: ${reason}`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to time out user.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to time out user.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "untimeout": {
       const user = interaction.options.getMember("user");
-      if (!user) return interaction.reply({ content: "❌ User not found.", ephemeral: true });
+      if (!user) return interaction.reply({ content: "❌ User not found.", flags: [MessageFlags.Ephemeral] });
       try {
         await user.timeout(null);
-        return interaction.reply({ content: `✅ Removed timeout from ${user.user.tag}.`, ephemeral: true });
+        return interaction.reply({ content: `✅ Removed timeout from ${user.user.tag}.`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to remove timeout.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to remove timeout.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "warn": {
       const user = interaction.options.getMember("user");
       const reason = interaction.options.getString("reason");
-      if (!user) return interaction.reply({ content: "❌ User not found.", ephemeral: true });
+      if (!user) return interaction.reply({ content: "❌ User not found.", flags: [MessageFlags.Ephemeral] });
       try {
         // You would typically store warnings in a database. For this example, we'll send a DM.
         await user.send(`⚠️ You have been warned in ${interaction.guild.name}. Reason: ${reason}`);
-        return interaction.reply({ content: `✅ Warned ${user.user.tag}. Reason: ${reason}`, ephemeral: true });
+        return interaction.reply({ content: `✅ Warned ${user.user.tag}. Reason: ${reason}`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
                 console.error(err);
-        return interaction.reply({ content: "❌ Failed to warn user. They may have DMs disabled.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to warn user. They may have DMs disabled.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "nick": {
       const user = interaction.options.getMember("user");
       const newNickname = interaction.options.getString("nickname");
-      if (!user) return interaction.reply({ content: "❌ User not found.", ephemeral: true });
-      if (user.roles.highest.position >= interaction.member.roles.highest.position) return interaction.reply({ content: "❌ You cannot change the nickname of a user with a higher or equal role.", ephemeral: true });
+      if (!user) return interaction.reply({ content: "❌ User not found.", flags: [MessageFlags.Ephemeral] });
+      if (user.roles.highest.position >= interaction.member.roles.highest.position) return interaction.reply({ content: "❌ You cannot change the nickname of a user with a higher or equal role.", flags: [MessageFlags.Ephemeral] });
       try {
         await user.setNickname(newNickname);
-        return interaction.reply({ content: `✅ Changed ${user.user.tag}'s nickname to "${newNickname}".`, ephemeral: true });
+        return interaction.reply({ content: `✅ Changed ${user.user.tag}'s nickname to "${newNickname}".`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to change nickname.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to change nickname.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "slowmode": {
       const duration = interaction.options.getInteger("duration");
-      if (duration < 0 || duration > 21600) return interaction.reply({ content: "❌ Duration must be between 0 and 21600 seconds.", ephemeral: true });
+      if (duration < 0 || duration > 21600) return interaction.reply({ content: "❌ Duration must be between 0 and 21600 seconds.", flags: [MessageFlags.Ephemeral] });
       try {
         await channel.setRateLimitPerUser(duration);
         if (duration > 0) {
-          return interaction.reply({ content: `✅ Slowmode set to ${duration} seconds.`, ephemeral: true });
+          return interaction.reply({ content: `✅ Slowmode set to ${duration} seconds.`, flags: [MessageFlags.Ephemeral] });
         } else {
-          return interaction.reply({ content: `✅ Slowmode disabled.`, ephemeral: true });
+          return interaction.reply({ content: `✅ Slowmode disabled.`, flags: [MessageFlags.Ephemeral] });
         }
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to set slowmode.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to set slowmode.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "lock": {
       const everyoneRole = interaction.guild.roles.cache.find(r => r.name === "@everyone");
       try {
         await channel.permissionOverwrites.edit(everyoneRole, { SendMessages: false });
-        return interaction.reply({ content: "✅ Channel locked.", ephemeral: true });
+        return interaction.reply({ content: "✅ Channel locked.", flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to lock channel.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to lock channel.", flags: [MessageFlags.Ephemeral] });
       }
     }
     case "unlock": {
       const everyoneRole = interaction.guild.roles.cache.find(r => r.name === "@everyone");
       try {
         await channel.permissionOverwrites.edit(everyoneRole, { SendMessages: true });
-        return interaction.reply({ content: "✅ Channel unlocked.", ephemeral: true });
+        return interaction.reply({ content: "✅ Channel unlocked.", flags: [MessageFlags.Ephemeral] });
       } catch (err) {
         console.error(err);
-        return interaction.reply({ content: "❌ Failed to unlock channel.", ephemeral: true });
+        return interaction.reply({ content: "❌ Failed to unlock channel.", flags: [MessageFlags.Ephemeral] });
       }
     }
 
@@ -1152,7 +1153,7 @@ Utility & Fun (Bot Access or Admin):
     case "summarize": {
       await interaction.deferReply();
       const amount = interaction.options.getInteger("amount");
-      if (amount < 1 || amount > 50) return interaction.editReply({ content: "❌ Please specify an amount between 1 and 50 messages.", ephemeral: true });
+      if (amount < 1 || amount > 50) return interaction.editReply({ content: "❌ Please specify an amount between 1 and 50 messages.", flags: [MessageFlags.Ephemeral] });
       try {
         const messages = await channel.messages.fetch({ limit: amount });
         const textToSummarize = messages.map(msg => `${msg.author.tag}: ${msg.content}`).reverse().join('\n');
@@ -1162,7 +1163,7 @@ Utility & Fun (Bot Access or Admin):
         splitMessage(response).forEach((chunk) => interaction.editReply(chunk));
       } catch (err) {
         console.error("Error summarizing messages:", err);
-        return interaction.editReply({ content: "❌ Failed to summarize messages.", ephemeral: true });
+        return interaction.editReply({ content: "❌ Failed to summarize messages.", flags: [MessageFlags.Ephemeral] });
       }
       break;
     }
@@ -1175,7 +1176,7 @@ Utility & Fun (Bot Access or Admin):
         interaction.editReply(response);
       } catch (err) {
         console.error("Error asking AI:", err);
-        interaction.editReply({ content: "❌ An error occurred while asking AI.", ephemeral: true });
+        interaction.editReply({ content: "❌ An error occurred while asking AI.", flags: [MessageFlags.Ephemeral] });
       }
       break;
     }
