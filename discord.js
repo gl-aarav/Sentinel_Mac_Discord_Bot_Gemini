@@ -1061,6 +1061,61 @@ client.on("interactionCreate", async (interaction) => {
 
     switch (interaction.commandName) {
       // Existing commands
+      case "help": {
+        try {
+          let helpMessage = `
+\`\`\`
+📘 Available Commands
+
+AI:
+/setcontext <text>             → Update AI response behavior
+/getcontext                    → Get AI context
+/summarize <amount>            → Summarize recent messages
+/askquestion <question>          → Ask AI a question
+
+Moderation:
+/kick <user> [reason]          → Kick a user
+/ban <user> [reason]           → Ban a user
+/timeout <user> <duration>     → Time out a user for a duration
+/untimeout <user>              → Remove a timeout
+/warn <user> <reason>          → Warn a user
+/nick <user> <nickname>        → Change a user's nickname
+/slowmode <duration>           → Set channel slowmode
+/lock                          → Lock a channel
+/unlock                        → Unlock a channel
+/delete <amount>               → Delete 1–100 recent messages
+/deleteall                     → Purge recent messages
+/addrole <role> <user>         → Assign a role to a user
+/removerole <role> <user>      → Remove a role from a user
+/createrole <name>             → Create a new role
+/deleterole <name>             → Delete a role
+/renamerole <old> <new>        → Rename a role
+/createchannel <name>          → Create a text channel
+/deletechannel <#channel>      → Delete a text channel
+/createprivatechannel <user>   → Private channel for a user
+/senddm <user> <message>       → Send a DM to a user
+/verify usr                    → Add the "Students" role to a user
+\`\`\`
+
+\`\`\`Utility & Fun:
+/help                          → Show this help message
+/ping                          → Check bot latency
+/userinfo [user]               → Display user info
+/serverinfo                    → Display server info
+/avatar [user]                 → Get a user's avatar
+/embed <title> <desc> [color]  → Send a custom embed
+/poll <question>               → Create a yes/no poll
+/8ball <question>              → Ask the 8-ball
+/randomfact                    → Get a random fact
+\`\`\`
+`;
+          splitMessage(helpMessage).forEach((chunk) => interaction.reply({ content: chunk, ephemeral: true }));
+          return;
+        } catch (err) {
+          console.error("Error sending help message:", err);
+          return interaction.reply({ content: "❌ Failed to send help message.", ephemeral: true });
+        }
+      }
       case "setcontext": {
         try {
           const newContext = interaction.options.getString("text");
