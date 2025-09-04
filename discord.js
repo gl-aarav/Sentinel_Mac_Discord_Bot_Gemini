@@ -1035,6 +1035,13 @@ client.on("interactionCreate", async (interaction) => {
   const isUserAdmin = isAdministrator(interaction.member);
   const canUseBot = hasBotAccess(interaction.member);
 
+  // Allow /askquestion to bypass bot access check
+  if (interaction.commandName === "/askquestion") {
+      // No bot access check for /askquestion
+  } else if (!canUseBot) {
+    return interaction.reply({ content: `❌ You need the "${BOT_ACCESS_ROLE}" role or Administrator permissions to use this bot.`, ephemeral: true });
+  }
+
   // Help Command
   if (interaction.commandName === "help") {
     const helpMessage = `
@@ -1091,11 +1098,6 @@ Utility & Fun (Bot Access or Admin):
         await interaction.followUp({ content: helpChunks[i], ephemeral: true });
     }
     return;
-  }
-
-  // Bot Access check for all commands (except 'help')
-  if (!canUseBot) {
-    return interaction.reply({ content: `❌ You need the "${BOT_ACCESS_ROLE}" role or Administrator permissions to use this bot.`, ephemeral: true });
   }
 
   // Admin-only slash commands
