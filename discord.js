@@ -646,6 +646,7 @@ function botPermsIn(channel) {
 async function registerSlashCommandsForGuild(guildId) {
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
   try {
+    console.log(`Attempting to register slash commands for guild ${guildId}...`);
     await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: SLASH_COMMANDS });
     console.log(`✅ Registered slash commands in guild ${guildId}`);
   } catch (err) {
