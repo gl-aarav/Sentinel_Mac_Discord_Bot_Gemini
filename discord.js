@@ -643,17 +643,24 @@ function botPermsIn(channel) {
   return channel.guild.members.me.permissionsIn(channel);
 }
 
+async function registerSlashCommandsForGuild(guildId) {
+  const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
+  try {
+    await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: SLASH_COMMANDS });
+    console.log(`✅ Registered slash commands in guild ${guildId}`);
+  } catch (err) {
+    console.error(`Error registering slash commands in guild ${guildId}:`, err);
+  }
+}
+
 // ==================== Bot Ready ====================
 client.once("ready", async () => {
   console.log(`${client.user.tag} is online!`);
 
-  const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
-
   try {
     const guilds = client.guilds.cache.map(g => g.id);
     for (const gid of guilds) {
-      await rest.put(Routes.applicationGuildCommands(client.user.id, gid), { body: SLASH_COMMANDS });
-      console.log(`✅ Registered slash commands in guild ${gid}`);
+      await registerSlashCommandsForGuild(gid);
     }
   } catch (err) {
     console.error("Error registering slash commands:", err);
@@ -661,14 +668,7 @@ client.once("ready", async () => {
 });
 
 client.on("guildCreate", async (guild) => {
-  const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
-
-  try {
-    await rest.put(Routes.applicationGuildCommands(client.user.id, guild.id), { body: SLASH_COMMANDS });
-    console.log(`✅ Registered slash commands in new guild ${guild.id}`);
-  } catch (err) {
-    console.error(`Error registering slash commands in guild ${guild.id}:`, err);
-  }
+  await registerSlashCommandsForGuild(guild.id);
 });
 
 // ==================== Forum Post Auto-Responder ====================
