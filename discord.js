@@ -1072,7 +1072,7 @@ Moderation (Admin Only):
 /verify usr                    → Add the "Students" role to a user
 \`\`\`
 
-\`\`\`Utility & Fun (Bot Access or Admin):
+\`\`\` Utility & Fun (Bot Access or Admin):
 !help                          → Show this help message
 /ping                          → Check bot latency
 /userinfo [user]               → Display user info
