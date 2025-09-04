@@ -648,6 +648,10 @@ async function registerSlashCommandsForGuild(guildId) {
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
   try {
     console.log(`Attempting to register slash commands for guild ${guildId}...`);
+    // Clear existing commands for this guild to prevent duplicates
+    await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: [] });
+    console.log(`Cleared existing commands in guild ${guildId}`);
+    // Register new commands
     await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: SLASH_COMMANDS });
     console.log(`✅ Registered slash commands in guild ${guildId}`);
   } catch (err) {
