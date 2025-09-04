@@ -265,10 +265,7 @@ let contextPrompt = "You are a helpful assistant that provides concise initial a
 
 // ==================== Helpers ====================
 function hasBotAccess(member) {
-  const botAccessRole = member.guild.roles.cache.find(role => role.name === "bot-access");
-  // If the 'bot-access' role exists, check if the member has it.
-  // If it doesn't exist, all users implicitly have access.
-  return !botAccessRole || member.roles.cache.has(botAccessRole.id);
+  return true;
 }
 
 function splitMessage(message) {
@@ -1056,10 +1053,6 @@ client.on("interactionCreate", async (interaction) => {
   const perms = botPermsIn(channel);
   const isUserAdmin = interaction.member.permissions.has(PermissionsBitField.Flags.Administrator);
 
-  if (!hasBotAccess(interaction.member)) {
-    return interaction.reply({ content: "❌ You do not have permission to use this bot.", ephemeral: true });
-  }
-
   // Handle slash commands
   if (interaction.isChatInputCommand()) {
     const { commandName } = interaction;
@@ -1477,13 +1470,12 @@ client.on("interactionCreate", async (interaction) => {
         break;
       }
       case "ping": {
-        await interaction.deferReply({ ephemeral: true });
         try {
           const latency = Math.round(client.ws.ping);
-          await interaction.editReply(`🏓 Pong! Latency is ${latency}ms.`);
+          interaction.reply(`🏓 Pong! Latency is ${latency}ms.`);
         } catch (err) {
           console.error("Error pinging bot:", err);
-          await interaction.editReply({ content: "❌ Failed to get bot latency.", ephemeral: true });
+          interaction.reply({ content: "❌ Failed to get bot latency.", ephemeral: true });
         }
         break;
       }
@@ -1604,18 +1596,17 @@ client.on("interactionCreate", async (interaction) => {
             "It is certain.", "It is decidedly so.", "Without a doubt.", "Yes, definitely.", "You may rely on it.",
             "As I see it, yes.", "Most likely.", "Outlook good.", "Yes.", "Signs point to yes.",
             "Reply hazy, try again.", "Ask again later.", "Better not tell you now.", "Cannot predict now.", "Concentrate and ask again.",
-            "Don\'t count on it.", "My reply is no.", "My sources say no.", "Outlook not so good.", "Very doubtful."
+            "Don't count on it.", "My reply is no.", "My sources say no.", "Outlook not so good.", "Very doubtful."
           ];
           const response = responses[Math.floor(Math.random() * responses.length)];
-          await interaction.editReply(`🎱 **${question}**\n${response}`);
+          interaction.reply(`🎱 **${question}**\n${response}`);
         } catch (err) {
           console.error("Error with 8ball command:", err);
-          await interaction.editReply({ content: "❌ An error occurred with the 8-ball. Please try again.", ephemeral: true });
+          interaction.reply({ content: "❌ An error occurred with the 8-ball. Please try again.", ephemeral: true });
         }
         break;
       }
       case "randomfact": {
-        await interaction.deferReply({ ephemeral: true });
         try {
           const facts = [
             "A group of flamingos is called a 'flamboyance'.",
@@ -1624,13 +1615,13 @@ client.on("interactionCreate", async (interaction) => {
             "Cows don’t have upper front teeth.",
             "The average person walks the equivalent of five times around the world in their lifetime.",
             "The total weight of all the ants on Earth is estimated to be about the same as the total weight of all the humans on Earth.",
-            "The electric eel is not an eel; it\'s a type of knifefish.",
+            "The electric eel is not an eel; it's a type of knifefish.",
           ];
           const fact = facts[Math.floor(Math.random() * facts.length)];
-          await interaction.editReply(`💡 **Random Fact:** ${fact}`);
+          interaction.reply(`💡 **Random Fact:** ${fact}`);
         } catch (err) {
           console.error("Error getting random fact:", err);
-          await interaction.editReply({ content: "❌ Failed to retrieve a random fact.", ephemeral: true });
+          interaction.reply({ content: "❌ Failed to retrieve a random fact.", ephemeral: true });
         }
         break;
       }
@@ -1682,7 +1673,7 @@ Moderation:
 /timeout <user> <duration>     → Time out a user for a duration
 /untimeout <user>              → Remove a timeout
 /warn <user> <reason>          → Warn a user
-/nick <user> <nickname>        → Change a user\'s nickname
+/nick <user> <nickname>        → Change a user's nickname
 /slowmode <duration>           → Set channel slowmode
 /lock                          → Lock a channel
 /unlock                        → Unlock a channel
@@ -1699,6 +1690,18 @@ Moderation:
 /senddm <user> <message>       → Send a DM to a user
 /verify usr                    → Add the "Students" role to a user
 \`\`\`
+
+\`\`\`Utility & Fun:
+!help                          → Show this help message
+/ping                          → Check bot latency
+/userinfo [user]               → Display user info
+/serverinfo                    → Display server info
+/avatar [user]                 → Get a user's avatar
+/embed <title> <desc> [color]  → Send a custom embed
+/poll <question>               → Create a yes/no poll
+/8ball <question>              → Ask the 8-ball
+/randomfact                    → Get a random fact
+\`\`\`
 `;
       // Fix: Use the existing splitMessage helper to break the long string.
       splitMessage(helpMessage).forEach((msg) => message.channel.send(msg));
@@ -1706,7 +1709,6 @@ Moderation:
       console.error("Error sending help message:", err);
       message.channel.send("❌ Failed to send help message.");
     }
-    return;
   }
 
   // Chat via Gemini (Corrected)
