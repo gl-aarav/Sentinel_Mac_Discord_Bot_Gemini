@@ -1069,7 +1069,8 @@ Moderation (Admin Only):
 /deletechannel <#channel>      → Delete a text channel
 /createprivatechannel <user>   → Private channel for a user + Admins
 /senddm <user> <message>       → Send a DM to a user
-/verify usr                    → Add the "Students" role to a user \`\`\`
+/verify usr                    → Add the "Students" role to a user
+\`\`\`
 
 \`\`\`Utility & Fun (Bot Access or Admin):
 !help                          → Show this help message
