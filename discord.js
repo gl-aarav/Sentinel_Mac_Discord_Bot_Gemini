@@ -260,7 +260,7 @@ function hasBotAccess(member) {
 function splitMessage(message) {
   const chunks = [];
   while (message.length > 0) {
-    let chunk = message.slice(0,1590);
+    let chunk = message.slice(0,1550);
 
     // Prefer to cut at the last newline if one exists in this chunk
     const lastNewline = chunk.lastIndexOf("\n");
