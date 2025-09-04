@@ -31,7 +31,8 @@ app.get("/api/bot-status", (req, res) => {
 });
 
 app.get("/api/commands", (req, res) => {
-
+  
+  res.json(commands);
 });
 
 const PORT = process.env.PORT || 3000;
