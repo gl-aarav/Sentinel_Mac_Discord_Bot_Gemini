@@ -1,8 +1,7 @@
 // ==================== Express / Webserver ====================
 const express = require("express");
 const app = express();
-
-const REGISTERED_GUILDS = new Set();
+const path = require("path");
 
 app.use(express.static("public"));
 
@@ -646,16 +645,11 @@ function botPermsIn(channel) {
 }
 
 async function registerSlashCommandsForGuild(guildId) {
-  if (REGISTERED_GUILDS.has(guildId)) {
-    console.log(`Commands already registered for guild ${guildId}. Skipping.`);
-    return;
-  }
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
   try {
     console.log(`Attempting to register slash commands for guild ${guildId}...`);
     await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: SLASH_COMMANDS });
     console.log(`✅ Registered slash commands in guild ${guildId}`);
-    REGISTERED_GUILDS.add(guildId);
   } catch (err) {
     console.error(`Error registering slash commands in guild ${guildId}:`, err);
   }
@@ -663,14 +657,12 @@ async function registerSlashCommandsForGuild(guildId) {
 
 // ==================== Bot Ready ====================
 client.once("ready", async () => {
-  console.log(`Logged in as ${client.user.tag}!`);
-  console.log(`Bot is in ${client.guilds.cache.size} guilds.`);
+  console.log(`${client.user.tag} is online!`);
+
   try {
     const guilds = client.guilds.cache.map(g => g.id);
     for (const gid of guilds) {
-      if (!REGISTERED_GUILDS.has(gid)) {
-        await registerSlashCommandsForGuild(gid);
-      }
+      await registerSlashCommandsForGuild(gid);
     }
   } catch (err) {
     console.error("Error registering slash commands:", err);
