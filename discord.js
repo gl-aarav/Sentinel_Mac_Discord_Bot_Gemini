@@ -635,15 +635,6 @@ client.once("ready", async () => {
       )
       .toJSON(),
     new SlashCommandBuilder()
-      .setName("8ball")
-      .setDescription("Answers a yes/no question with a magical 8-ball response.")
-      .addStringOption(option =>
-        option.setName("question")
-          .setDescription("The question for the 8-ball.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
       .setName("randomfact")
       .setDescription("Gets a random fun fact.")
       .toJSON(),
