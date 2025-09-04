@@ -1568,14 +1568,14 @@ client.on("messageCreate", async (message) => {
 \`\`\`
 📘 Available Commands
 
-AI (Bot Access or Admin):
+AI:
 !chat <message>                → Ask AI via AI (no context)
-/setcontext <text>             → Update AI response behavior (Admin)
-/getcontext                    → Get AI context (Admin)
-/summarize <amount>            → Summarize recent messages (Bot Access or Admin)
-/askquestion <question>          → Ask AI a question (Bot Access or Admin)
+/setcontext <text>             → Update AI response behavior
+/getcontext                    → Get AI context
+/summarize <amount>            → Summarize recent messages
+/askquestion <question>          → Ask AI a question
 
-Moderation (Admin Only):
+Moderation:
 /kick <user> [reason]          → Kick a user
 /ban <user> [reason]           → Ban a user
 /timeout <user> <duration>     → Time out a user for a duration
@@ -1594,12 +1594,12 @@ Moderation (Admin Only):
 /renamerole <old> <new>        → Rename a role
 /createchannel <name>          → Create a text channel
 /deletechannel <#channel>      → Delete a text channel
-/createprivatechannel <user>   → Private channel for a user + Admins
+/createprivatechannel <user>   → Private channel for a user
 /senddm <user> <message>       → Send a DM to a user
 /verify usr                    → Add the "Students" role to a user
 \`\`\`
 
-\`\`\`Utility & Fun (Bot Access or Admin):
+\`\`\`Utility & Fun:
 !help                          → Show this help message
 /ping                          → Check bot latency
 /userinfo [user]               → Display user info
