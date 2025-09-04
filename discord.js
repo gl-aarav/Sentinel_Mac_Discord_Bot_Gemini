@@ -246,6 +246,341 @@ const BOT_ACCESS_ROLE = "botAccess";
 // Default AI context
 let contextPrompt = "You are a helpful assistant that provides concise initial answers.";
 
+const SLASH_COMMANDS = [
+  new SlashCommandBuilder()
+    .setName("delete")
+    .setDescription("Delete a number of recent messages in this channel (1–100, <14 days)")
+    .addIntegerOption(opt =>
+      opt.setName("amount")
+        .setDescription("Number of messages to delete (1–100)")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("getcontext")
+    .setDescription("Displays the AI's current context.")
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("deleteall")
+    .setDescription("Delete all messages in this channel (handles 14-day limit; may nuke channel)")
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("help")
+    .setDescription("Shows a list of all available commands.")
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("setcontext")
+    .setDescription("Updates the AI's response behavior/context.")
+    .addStringOption(option =>
+      option.setName("text")
+        .setDescription("The new context for the AI.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("addrole")
+    .setDescription("Assigns a role to a user.")
+    .addRoleOption(option =>
+      option.setName("role")
+        .setDescription("The role to add.")
+        .setRequired(true)
+    )
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to give the role to.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("removerole")
+    .setDescription("Removes a role from a user.")
+    .addRoleOption(option =>
+      option.setName("role")
+        .setDescription("The role to remove.")
+        .setRequired(true)
+    )
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to remove the role from.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("createrole")
+    .setDescription("Creates a new role.")
+    .addStringOption(option =>
+      option.setName("name")
+        .setDescription("The name for the new role.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("deleterole")
+    .setDescription("Deletes a role.")
+    .addRoleOption(option =>
+      option.setName("name")
+        .setDescription("The role to delete.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("renamerole")
+    .setDescription("Renames an existing role.")
+    .addRoleOption(option =>
+      option.setName("old_name")
+        .setDescription("The role to rename.")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("new_name")
+        .setDescription("The new name for the role.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("createchannel")
+    .setDescription("Creates a new text channel.")
+    .addStringOption(option =>
+      option.setName("name")
+        .setDescription("The name for the new channel.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("deletechannel")
+    .setDescription("Deletes a text channel.")
+    .addChannelOption(option =>
+      option.setName("channel")
+        .setDescription("The channel to delete.")
+        .setRequired(true)
+        .addChannelTypes(ChannelType.GuildText)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("createprivatechannel")
+    .setDescription("Creates a private text channel for a user and admins.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to create the private channel for.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("senddm")
+    .setDescription("Sends a direct message to a user.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to send the DM to.")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("message")
+        .setDescription("The message to send.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("verify")
+    .setDescription("Adds the 'Students' role to a user.")
+    .addUserOption(option =>
+      option.setName("usr")
+        .setDescription("The user to add the role to.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  // ➕ New Moderation Commands
+  new SlashCommandBuilder()
+    .setName("kick")
+    .setDescription("Kicks a user from the server.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to kick.")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("reason")
+        .setDescription("The reason for the kick.")
+        .setRequired(false)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("ban")
+    .setDescription("Bans a user from the server.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to ban.")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("reason")
+        .setDescription("The reason for the ban.")
+        .setRequired(false)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("timeout")
+    .setDescription("Times out a user for a specified duration.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to time out.")
+        .setRequired(true)
+    )
+    .addIntegerOption(option =>
+      option.setName("duration")
+        .setDescription("Duration in minutes (e.g., 60 for 1 hour).")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("reason")
+        .setDescription("The reason for the timeout.")
+        .setRequired(false)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("untimeout")
+    .setDescription("Removes a timeout from a user.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to remove the timeout from.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("warn")
+    .setDescription("Issues a warning to a user.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to warn.")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("reason")
+        .setDescription("The reason for the warning.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("nick")
+    .setDescription("Changes a user's nickname.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to change the nickname of.")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("nickname")
+        .setDescription("The new nickname.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("slowmode")
+    .setDescription("Sets the slowmode for the current channel.")
+    .addIntegerOption(option =>
+      option.setName("duration")
+        .setDescription("Slowmode duration in seconds (0 to disable).")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("lock")
+    .setDescription("Locks a channel, preventing non-admin users from sending messages.")
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("unlock")
+    .setDescription("Unlocks a channel, allowing non-admin users to send messages.")
+    .toJSON(),
+
+  // ➕ New AI Commands
+  new SlashCommandBuilder()
+    .setName("summarize")
+    .setDescription("Summarizes a specified number of recent messages.")
+    .addIntegerOption(option =>
+      option.setName("amount")
+        .setDescription("The number of messages to summarize (1-50).")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("askquestion")
+    .setDescription("Ask AI a question with context.")
+    .addStringOption(option =>
+      option.setName("question")
+        .setDescription("The question to ask AI.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("ping")
+    .setDescription("Checks the bot's latency.")
+    .toJSON(),
+
+  // ➕ New Utility & Fun Commands
+  new SlashCommandBuilder()
+    .setName("userinfo")
+    .setDescription("Displays information about a user.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to get info about.")
+        .setRequired(false)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("serverinfo")
+    .setDescription("Displays information about the server.")
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("avatar")
+    .setDescription("Gets the avatar of a user.")
+    .addUserOption(option =>
+      option.setName("user")
+        .setDescription("The user to get the avatar of.")
+        .setRequired(false)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("embed")
+    .setDescription("Sends a custom embed message.")
+    .addStringOption(option =>
+      option.setName("title")
+        .setDescription("The title of the embed.")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("description")
+        .setDescription("The description of the embed.")
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName("color")
+        .setDescription("The color of the embed (hex code, e.g., #0099ff).")
+        .setRequired(false)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("poll")
+    .setDescription("Creates a simple yes/no poll.")
+    .addStringOption(option =>
+      option.setName("question")
+        .setDescription("The question for the poll.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("8ball")
+    .setDescription("Answers a yes/no question with a magical 8-ball response.")
+    .addStringOption(option =>
+      option.setName("question")
+        .setDescription("The question for the 8-ball.")
+        .setRequired(true)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("randomfact")
+    .setDescription("Gets a random fun fact.")
+    .toJSON(),
+];
+
 // ==================== Helpers ====================
 function isAdministrator(member) {
   if (!member) return false;
@@ -314,345 +649,10 @@ client.once("ready", async () => {
 
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
 
-  const commands = [
-    new SlashCommandBuilder()
-      .setName("delete")
-      .setDescription("Delete a number of recent messages in this channel (1–100, <14 days)")
-      .addIntegerOption(opt =>
-        opt.setName("amount")
-          .setDescription("Number of messages to delete (1–100)")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("getcontext")
-      .setDescription("Displays the AI's current context.")
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("deleteall")
-      .setDescription("Delete all messages in this channel (handles 14-day limit; may nuke channel)")
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("help")
-      .setDescription("Shows a list of all available commands.")
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("setcontext")
-      .setDescription("Updates the AI's response behavior/context.")
-      .addStringOption(option =>
-        option.setName("text")
-          .setDescription("The new context for the AI.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("addrole")
-      .setDescription("Assigns a role to a user.")
-      .addRoleOption(option =>
-        option.setName("role")
-          .setDescription("The role to add.")
-          .setRequired(true)
-      )
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to give the role to.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("removerole")
-      .setDescription("Removes a role from a user.")
-      .addRoleOption(option =>
-        option.setName("role")
-          .setDescription("The role to remove.")
-          .setRequired(true)
-      )
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to remove the role from.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("createrole")
-      .setDescription("Creates a new role.")
-      .addStringOption(option =>
-        option.setName("name")
-          .setDescription("The name for the new role.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("deleterole")
-      .setDescription("Deletes a role.")
-      .addRoleOption(option =>
-        option.setName("name")
-          .setDescription("The role to delete.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("renamerole")
-      .setDescription("Renames an existing role.")
-      .addRoleOption(option =>
-        option.setName("old_name")
-          .setDescription("The role to rename.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("new_name")
-          .setDescription("The new name for the role.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("createchannel")
-      .setDescription("Creates a new text channel.")
-      .addStringOption(option =>
-        option.setName("name")
-          .setDescription("The name for the new channel.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("deletechannel")
-      .setDescription("Deletes a text channel.")
-      .addChannelOption(option =>
-        option.setName("channel")
-          .setDescription("The channel to delete.")
-          .setRequired(true)
-          .addChannelTypes(ChannelType.GuildText)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("createprivatechannel")
-      .setDescription("Creates a private text channel for a user and admins.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to create the private channel for.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("senddm")
-      .setDescription("Sends a direct message to a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to send the DM to.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("message")
-          .setDescription("The message to send.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("verify")
-      .setDescription("Adds the 'Students' role to a user.")
-      .addUserOption(option =>
-        option.setName("usr")
-          .setDescription("The user to add the role to.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    // ➕ New Moderation Commands
-    new SlashCommandBuilder()
-      .setName("kick")
-      .setDescription("Kicks a user from the server.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to kick.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("reason")
-          .setDescription("The reason for the kick.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("ban")
-      .setDescription("Bans a user from the server.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to ban.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("reason")
-          .setDescription("The reason for the ban.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("timeout")
-      .setDescription("Times out a user for a specified duration.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to time out.")
-          .setRequired(true)
-      )
-      .addIntegerOption(option =>
-        option.setName("duration")
-          .setDescription("Duration in minutes (e.g., 60 for 1 hour).")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("reason")
-          .setDescription("The reason for the timeout.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("untimeout")
-      .setDescription("Removes a timeout from a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to remove the timeout from.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("warn")
-      .setDescription("Issues a warning to a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to warn.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("reason")
-          .setDescription("The reason for the warning.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("nick")
-      .setDescription("Changes a user's nickname.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to change the nickname of.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("nickname")
-          .setDescription("The new nickname.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("slowmode")
-      .setDescription("Sets the slowmode for the current channel.")
-      .addIntegerOption(option =>
-        option.setName("duration")
-          .setDescription("Slowmode duration in seconds (0 to disable).")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("lock")
-      .setDescription("Locks a channel, preventing non-admin users from sending messages.")
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("unlock")
-      .setDescription("Unlocks a channel, allowing non-admin users to send messages.")
-      .toJSON(),
-
-    // ➕ New AI Commands
-    new SlashCommandBuilder()
-      .setName("summarize")
-      .setDescription("Summarizes a specified number of recent messages.")
-      .addIntegerOption(option =>
-        option.setName("amount")
-          .setDescription("The number of messages to summarize (1-50).")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("askquestion")
-      .setDescription("Ask AI a question with context.")
-      .addStringOption(option =>
-        option.setName("question")
-          .setDescription("The question to ask AI.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("ping")
-      .setDescription("Checks the bot's latency.")
-      .toJSON(),
-
-    // ➕ New Utility & Fun Commands
-    new SlashCommandBuilder()
-      .setName("userinfo")
-      .setDescription("Displays information about a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to get info about.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("serverinfo")
-      .setDescription("Displays information about the server.")
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("avatar")
-      .setDescription("Gets the avatar of a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to get the avatar of.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("embed")
-      .setDescription("Sends a custom embed message.")
-      .addStringOption(option =>
-        option.setName("title")
-          .setDescription("The title of the embed.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("description")
-          .setDescription("The description of the embed.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("color")
-          .setDescription("The color of the embed (hex code, e.g., #0099ff).")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("poll")
-      .setDescription("Creates a simple yes/no poll.")
-      .addStringOption(option =>
-        option.setName("question")
-          .setDescription("The question for the poll.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("8ball")
-      .setDescription("Answers a yes/no question with a magical 8-ball response.")
-      .addStringOption(option =>
-        option.setName("question")
-          .setDescription("The question for the 8-ball.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("randomfact")
-      .setDescription("Gets a random fun fact.")
-      .toJSON(),
-  ];
-
   try {
     const guilds = client.guilds.cache.map(g => g.id);
     for (const gid of guilds) {
-      await rest.put(Routes.applicationGuildCommands(client.user.id, gid), { body: commands });
+      await rest.put(Routes.applicationGuildCommands(client.user.id, gid), { body: SLASH_COMMANDS });
       console.log(`✅ Registered slash commands in guild ${gid}`);
     }
   } catch (err) {
@@ -662,338 +662,9 @@ client.once("ready", async () => {
 
 client.on("guildCreate", async (guild) => {
   const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_BOT_TOKEN);
-  const commands = [
-    new SlashCommandBuilder()
-      .setName("delete")
-      .setDescription("Delete a number of recent messages in this channel (1–100, <14 days)")
-      .addIntegerOption(opt =>
-        opt.setName("amount")
-          .setDescription("Number of messages to delete (1–100)")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("deleteall")
-      .setDescription("Delete all messages in this channel (handles 14-day limit; may nuke channel)")
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("help")
-      .setDescription("Shows a list of all available commands.")
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("setcontext")
-      .setDescription("Updates the AI's response behavior/context.")
-      .addStringOption(option =>
-        option.setName("text")
-          .setDescription("The new context for the AI.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("addrole")
-      .setDescription("Assigns a role to a user.")
-      .addRoleOption(option =>
-        option.setName("role")
-          .setDescription("The role to add.")
-          .setRequired(true)
-      )
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to give the role to.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("removerole")
-      .setDescription("Removes a role from a user.")
-      .addRoleOption(option =>
-        option.setName("role")
-          .setDescription("The role to remove.")
-          .setRequired(true)
-      )
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to remove the role from.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("createrole")
-      .setDescription("Creates a new role.")
-      .addStringOption(option =>
-        option.setName("name")
-          .setDescription("The name for the new role.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("deleterole")
-      .setDescription("Deletes a role.")
-      .addRoleOption(option =>
-        option.setName("name")
-          .setDescription("The role to delete.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("renamerole")
-      .setDescription("Renames an existing role.")
-      .addRoleOption(option =>
-        option.setName("old_name")
-          .setDescription("The role to rename.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("new_name")
-          .setDescription("The new name for the role.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("createchannel")
-      .setDescription("Creates a new text channel.")
-      .addStringOption(option =>
-        option.setName("name")
-          .setDescription("The name for the new channel.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("deletechannel")
-      .setDescription("Deletes a text channel.")
-      .addChannelOption(option =>
-        option.setName("channel")
-          .setDescription("The channel to delete.")
-          .setRequired(true)
-          .addChannelTypes(ChannelType.GuildText)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("createprivatechannel")
-      .setDescription("Creates a private text channel for a user and admins.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to create the private channel for.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("senddm")
-      .setDescription("Sends a direct message to a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to send the DM to.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("message")
-          .setDescription("The message to send.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("verify")
-      .setDescription("Adds the 'Students' role to a user.")
-      .addUserOption(option =>
-        option.setName("usr")
-          .setDescription("The user to add the role to.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    // ➕ New Moderation Commands
-    new SlashCommandBuilder()
-      .setName("kick")
-      .setDescription("Kicks a user from the server.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to kick.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("reason")
-          .setDescription("The reason for the kick.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("ban")
-      .setDescription("Bans a user from the server.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to ban.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("reason")
-          .setDescription("The reason for the ban.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("timeout")
-      .setDescription("Times out a user for a specified duration.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to time out.")
-          .setRequired(true)
-      )
-      .addIntegerOption(option =>
-        option.setName("duration")
-          .setDescription("Duration in minutes (e.g., 60 for 1 hour).")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("reason")
-          .setDescription("The reason for the timeout.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("untimeout")
-      .setDescription("Removes a timeout from a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to remove the timeout from.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("warn")
-      .setDescription("Issues a warning to a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to warn.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("reason")
-          .setDescription("The reason for the warning.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("nick")
-      .setDescription("Changes a user's nickname.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to change the nickname of.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("nickname")
-          .setDescription("The new nickname.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("slowmode")
-      .setDescription("Sets the slowmode for the current channel.")
-      .addIntegerOption(option =>
-        option.setName("duration")
-          .setDescription("Slowmode duration in seconds (0 to disable).")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("lock")
-      .setDescription("Locks a channel, preventing non-admin users from sending messages.")
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("unlock")
-      .setDescription("Unlocks a channel, allowing non-admin users to send messages.")
-      .toJSON(),
 
-    // ➕ New AI Commands
-    new SlashCommandBuilder()
-      .setName("summarize")
-      .setDescription("Summarizes a specified number of recent messages.")
-      .addIntegerOption(option =>
-        option.setName("amount")
-          .setDescription("The number of messages to summarize (1-50).")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("askquestion")
-      .setDescription("Ask AI a question with context.")
-      .addStringOption(option =>
-        option.setName("question")
-          .setDescription("The question to ask AI.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("ping")
-      .setDescription("Checks the bot's latency.")
-      .toJSON(),
-
-    // ➕ New Utility & Fun Commands
-    new SlashCommandBuilder()
-      .setName("userinfo")
-      .setDescription("Displays information about a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to get info about.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("serverinfo")
-      .setDescription("Displays information about the server.")
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("avatar")
-      .setDescription("Gets the avatar of a user.")
-      .addUserOption(option =>
-        option.setName("user")
-          .setDescription("The user to get the avatar of.")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("embed")
-      .setDescription("Sends a custom embed message.")
-      .addStringOption(option =>
-        option.setName("title")
-          .setDescription("The title of the embed.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("description")
-          .setDescription("The description of the embed.")
-          .setRequired(true)
-      )
-      .addStringOption(option =>
-        option.setName("color")
-          .setDescription("The color of the embed (hex code, e.g., #0099ff).")
-          .setRequired(false)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("poll")
-      .setDescription("Creates a simple yes/no poll.")
-      .addStringOption(option =>
-        option.setName("question")
-          .setDescription("The question for the poll.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("8ball")
-      .setDescription("Answers a yes/no question with a magical 8-ball response.")
-      .addStringOption(option =>
-        option.setName("question")
-          .setDescription("The question for the 8-ball.")
-          .setRequired(true)
-      )
-      .toJSON(),
-    new SlashCommandBuilder()
-      .setName("randomfact")
-      .setDescription("Gets a random fun fact.")
-      .toJSON(),
-  ];
   try {
-    await rest.put(Routes.applicationGuildCommands(client.user.id, guild.id), { body: commands });
+    await rest.put(Routes.applicationGuildCommands(client.user.id, guild.id), { body: SLASH_COMMANDS });
     console.log(`✅ Registered slash commands in new guild ${guild.id}`);
   } catch (err) {
     console.error(`Error registering slash commands in guild ${guild.id}:`, err);
@@ -1101,7 +772,7 @@ Utility & Fun (Bot Access or Admin):
   // Admin-only slash commands
   const adminCommands = ["setcontext", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "delete", "deleteall", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify"];
   if (adminCommands.includes(interaction.commandName) && !isUserAdmin) {
-    return interaction.reply({ content: "❌ You don’t have permission to use this command.", ephemeral: true });
+    return interaction.reply({ content: "❌ You don't have permission to use this command.", ephemeral: true });
   }
 
   switch (interaction.commandName) {
@@ -1611,7 +1282,7 @@ Utility & Fun (Bot Access or Admin):
         "A group of flamingos is called a 'flamboyance'.",
         "The shortest war in history was between Britain and Zanzibar on August 27, 1896. Zanzibar surrendered after 38 minutes.",
         "Honey never spoils. Archaeologists have found pots of honey in ancient Egyptian tombs that are over 3,000 years old and still edible.",
-        "Cows don’t have upper front teeth.",
+        "Cows don't have upper front teeth.",
         "The average person walks the equivalent of five times around the world in their lifetime.",
         "The total weight of all the ants on Earth is estimated to be about the same as the total weight of all the humans on Earth.",
         "The electric eel is not an eel; it's a type of knifefish.",
@@ -1646,7 +1317,7 @@ client.on("messageCreate", async (message) => {
   // Admin check for legacy '!' commands (excluding !chat and !help)
   if (command !== "!chat" && command !== "!help" && command?.startsWith("!")) {
     if (!isAdministrator(message.member)) {
-      return message.channel.send("❌ You don’t have permission to use this command.");
+      return message.channel.send("❌ You don't have permission to use this command.");
     }
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/` instead.");
     return;
