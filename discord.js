@@ -202,6 +202,11 @@ app.get("/api/commands", (req, res) => {
       description: "Gets a random fun fact.",
       admin: false,
     },
+    {
+      name: "/uptime",
+      description: "Displays the bot's uptime.",
+      admin: false,
+    },
   ];
   res.json(commands);
 });
@@ -518,6 +523,10 @@ const SLASH_COMMANDS = [
 
   // ➕ New Utility & Fun Commands
   new SlashCommandBuilder()
+    .setName("uptime")
+    .setDescription("Displays the bot's uptime.")
+    .toJSON(),
+  new SlashCommandBuilder()
     .setName("userinfo")
     .setDescription("Displays information about a user.")
     .addUserOption(option =>
@@ -751,6 +760,7 @@ Moderation (Admin Only):
 \`\`\`Utility & Fun (Bot Access or Admin):
 !help                          → Show this help message
 /ping                          → Check bot latency
+/uptime                        → Display bot uptime
 /userinfo [user]               → Display user info
 /serverinfo                    → Display server info
 /avatar [user]                 → Get a user's avatar
@@ -1189,6 +1199,16 @@ Moderation (Admin Only):
       interaction.reply(`🏓 Pong! Latency is ${latency}ms.`);
       break;
     }
+    case "uptime": {
+      const uptime = client.uptime;
+      const days = Math.floor(uptime / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((uptime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((uptime % (1000 * 60)) / 1000);
+
+      interaction.reply(`🕒 Bot Uptime: \`\`\`${days}d ${hours}h ${minutes}m ${seconds}s\`\`\``);
+      break;
+    }
 
     // ➕ New Utility & Fun Commands
     case "userinfo": {
@@ -1368,6 +1388,7 @@ Moderation (Admin Only):
 Utility & Fun (Bot Access or Admin):
 !help                          → Show this help message
 /ping                          → Check bot latency
+/uptime                        → Display bot uptime
 /userinfo [user]               → Display user info
 /serverinfo                    → Display server info
 /avatar [user]                 → Get a user's avatar
@@ -1425,28 +1446,4 @@ Utility & Fun (Bot Access or Admin):
   }
 
   if (command === "!renamerole") {
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/renamerole` instead.");
-  }
-
-  // Channel Commands
-  if (command === "!createchannel") {
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/createchannel` instead.");
-  }
-
-  if (command === "!deletechannel") {
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/deletechannel` instead.");
-  }
-
-  // Private Channel
-  if (command === "!createprivatechannel") {
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/createprivatechannel` instead.");
-  }
-
-  // Send DM (corrected logic)
-  if (command === "!senddm") {
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/senddm` instead.");
-  }
-});
-
-// ==================== Login ====================
-client.login(process.env.DISCORD_BOT_TOKEN);
+    message.channel.send("❌ This `!`
