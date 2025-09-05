@@ -1428,3 +1428,5 @@ Utility & Fun (Bot Access or Admin):
     }
   }
 });
+
+client.login(process.env.DISCORD_BOT_TOKEN);
