@@ -1427,23 +1427,4 @@ Utility & Fun (Bot Access or Admin):
       message.channel.send("❌ Error while executing AI chat.");
     }
   }
-
-  // Role Commands
-  if (command === "!addrole") {
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/addrole` instead.");
-  }
-
-  if (command === "!removerole") {
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/removerole` instead.");
-  }
-
-  if (command === "!createrole") {
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/createrole` instead.");
-  }
-
-  if (command === "!deleterole") {
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/deleterole` instead.");
-  }
-
-  if (command === "!renamerole") {
-    message.channel.send("❌ This `!`
+});
