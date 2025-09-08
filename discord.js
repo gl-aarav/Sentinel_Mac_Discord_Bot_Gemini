@@ -31,178 +31,18 @@ app.get("/api/bot-status", (req, res) => {
 });
 
 app.get("/api/commands", (req, res) => {
-  const commands = [
-    {
-      name: "/delete",
-      description: "Delete a number of recent messages in this channel (1–100, <14 days)",
-      admin: true,
-    },
-    {
-      name: "/getcontext",
-      description: "Displays the AI's current context.",
-      admin: true,
-    },
-    {
-      name: "/deleteall",
-      description: "Delete all messages in this channel (handles 14-day limit; may nuke channel)",
-      admin: true,
-    },
-    {
-      name: "/help",
-      description: "Shows a list of all available commands.",
-      admin: false,
-    },
-    {
-      name: "/setcontext",
-      description: "Updates the AI's response behavior/context.",
-      admin: true,
-    },
-    {
-      name: "/addrole",
-      description: "Assigns a role to a user.",
-      admin: true,
-    },
-    {
-      name: "/removerole",
-      description: "Removes a role from a user.",
-      admin: true,
-    },
-    {
-      name: "/createrole",
-      description: "Creates a new role.",
-      admin: true,
-    },
-    {
-      name: "/deleterole",
-      description: "Deletes a role.",
-      admin: true,
-    },
-    {
-      name: "/renamerole",
-      description: "Renames an existing role.",
-      admin: true,
-    },
-    {
-      name: "/createchannel",
-      description: "Creates a new text channel.",
-      admin: true,
-    },
-    {
-      name: "/deletechannel",
-      description: "Deletes a text channel.",
-      admin: true,
-    },
-    {
-      name: "/createprivatechannel",
-      description: "Creates a private text channel for a user and admins.",
-      admin: true,
-    },
-    {
-      name: "/senddm",
-      description: "Sends a direct message to a user.",
-      admin: true,
-    },
-    {
-      name: "/verify",
-      description: "Adds the 'Students' role to a user.",
-      admin: true,
-    },
-    {
-      name: "/kick",
-      description: "Kicks a user from the server.",
-      admin: true,
-    },
-    {
-      name: "/ban",
-      description: "Bans a user from the server.",
-      admin: true,
-    },
-    {
-      name: "/timeout",
-      description: "Times out a user for a specified duration.",
-      admin: true,
-    },
-    {
-      name: "/untimeout",
-      description: "Removes a timeout from a user.",
-      admin: true,
-    },
-    {
-      name: "/warn",
-      description: "Issues a warning to a user.",
-      admin: true,
-    },
-    {
-      name: "/nick",
-      description: "Changes a user's nickname.",
-      admin: true,
-    },
-    {
-      name: "/slowmode",
-      description: "Sets the slowmode for the current channel.",
-      admin: true,
-    },
-    {
-      name: "/lock",
-      description: "Locks a channel, preventing non-admin users from sending messages.",
-      admin: true,
-    },
-    {
-      name: "/unlock",
-      description: "Unlocks a channel, allowing non-admin users to send messages.",
-      admin: true,
-    },
-    {
-      name: "/summarize",
-      description: "Summarizes a specified number of recent messages.",
-      admin: true,
-    },
-    {
-      name: "/askquestion",
-      description: "Ask AI a question with context.",
-      admin: false,
-    },
-    {
-      name: "/ping",
-      description: "Checks the bot's latency.",
-      admin: false,
-    },
-    {
-      name: "/userinfo",
-      description: "Displays information about a user.",
-      admin: false,
-    },
-    {
-      name: "/serverinfo",
-      description: "Displays information about the server.",
-      admin: false,
-    },
-    {
-      name: "/avatar",
-      description: "Gets the avatar of a user.",
-      admin: false,
-    },
-    {
-      name: "/embed",
-      description: "Sends a custom embed message.",
-      admin: false,
-    },
-    {
-      name: "/poll",
-      description: "Creates a simple yes/no poll.",
-      admin: false,
-    },
-    {
-      name: "/8ball",
-      description: "Answers a yes/no question with a magical 8-ball response.",
-      admin: false,
-    },
-    {
-      name: "/randomfact",
-      description: "Gets a random fun fact.",
-      admin: false,
-    },
-  ];
+  // Use SLASH_COMMANDS to dynamically generate the list of commands
+  const commands = SLASH_COMMANDS.map(cmd => {
+    // Determine if the command is admin-only. The adminCommands array is defined later in the file.
+    // For now, we'll assume a command is admin if it's in the hardcoded list from the original file.
+    // This will be properly linked to the 'adminCommands' array later.
+    const isAdminCommand = adminCommands.includes(cmd.name);
+    return {
+      name: `/${cmd.name}`,
+      description: cmd.description,
+      admin: isAdminCommand,
+    };
+  });
   res.json(commands);
 });
 
@@ -246,6 +86,8 @@ const BOT_ACCESS_ROLE = "botAccess";
 
 // Default AI context
 let contextPrompt = "You are a helpful assistant that provides concise initial answers. This is a Machine Learning club and any other topic than machine learning is discouraged. You should be extra polite and if people go off topic make a sentence that is friendly saying that the topic should be about machine learning only. Use emojis if necessary. Always make sure people don’t get offended. If a person is off topic try not to ask a follow up question.";
+
+const adminCommands = ["delete", "getcontext", "deleteall", "setcontext", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "summarize"];
 
 const SLASH_COMMANDS = [
   new SlashCommandBuilder()
@@ -714,226 +556,7 @@ client.on("interactionCreate", async (interaction) => {
 
   // Help Command
   if (interaction.commandName === "help") {
-    const helpMessage = `
-\`\`\`
-📘 Available Commands
-
-AI (Bot Access or Admin):
-!chat <message>                → Ask AI via AI (no context)
-/setcontext <text>             → Update AI response behavior (Admin)
-/getcontext                    → Get AI context (Admin)
-/summarize <amount>            → Summarize recent messages (Bot Access or Admin)
-/askquestion <question>          → Ask AI a question (Bot Access or Admin)
-
-Moderation (Admin Only):
-/kick <user> [reason]          → Kick a user
-/ban <user> [reason]           → Ban a user
-/timeout <user> <duration>     → Time out a user for a duration
-/untimeout <user>              → Remove a timeout
-/warn <user> <reason>          → Warn a user
-/nick <user> <nickname>        → Change a user's nickname
-/slowmode <duration>           → Set channel slowmode
-/lock                          → Lock a channel
-/unlock                        → Unlock a channel
-/delete <amount>               → Delete 1–100 recent messages
-/deleteall                     → Purge recent messages
-/addrole <role> <user>         → Assign a role to a user
-/removerole <role> <user>      → Remove a role from a user
-/createrole <name>             → Create a new role
-/deleterole <name>             → Delete a role
-/renamerole <old> <new>        → Rename a role
-/createchannel <name>          → Create a text channel
-/deletechannel <#channel>      → Delete a text channel
-/createprivatechannel <user>   → Private channel for a user + Admins
-/senddm <user> <message>       → Send a DM to a user
-/verify usr                    → Add the "Students" role to a user \`\`\`
-
-\`\`\`Utility & Fun (Bot Access or Admin):
-!help                          → Show this help message
-/ping                          → Check bot latency
-/userinfo [user]               → Display user info
-/serverinfo                    → Display server info
-/avatar [user]                 → Get a user's avatar
-/embed <title> <desc> [color]  → Send a custom embed
-/poll <question>               → Create a yes/no poll
-/8ball <question>              → Ask the 8-ball
-/randomfact                    → Get a random fact
-\`\`\`
-`;
-    // Fix: Defer reply and split the message to avoid character limit issues
-    await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
-    const helpChunks = splitMessage(helpMessage);
-    await interaction.editReply({ content: helpChunks[0] });
-    for (let i = 1; i < helpChunks.length; i++) {
-        await interaction.followUp({ content: helpChunks[i], flags: [MessageFlags.Ephemeral] });
-    }
-    return;
-  }
-
-  // Bot Access check for all commands (except 'help')
-  if (!canUseBot) {
-    return interaction.reply({ content: `❌ You need the "${BOT_ACCESS_ROLE}" role or Administrator permissions to use this bot.`, flags: [MessageFlags.Ephemeral] });
-  }
-
-  // Admin-only slash commands
-  const adminCommands = ["setcontext", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "delete", "deleteall", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify"];
-  if (adminCommands.includes(interaction.commandName) && !isUserAdmin) {
-    return interaction.reply({ content: "❌ You don't have permission to use this command.", flags: [MessageFlags.Ephemeral] });
-  }
-
-  switch (interaction.commandName) {
-    // Existing commands
-    case "setcontext": {
-      const newContext = interaction.options.getString("text");
-      contextPrompt = newContext;
-      return interaction.reply({ content: "✅ AI context updated successfully!", flags: [MessageFlags.Ephemeral] });
-    }
-    case "getcontext": {
-  return interaction.reply({ content: `✅ The current AI context is:\n\`\`\`${contextPrompt}\`\`\``, flags: [MessageFlags.Ephemeral] });
-}
-    case "addrole": {
-      const role = interaction.options.getRole("role");
-      const member = interaction.options.getMember("user");
-      if (!role || !member) return interaction.reply({ content: "❌ Role or user not found.", flags: [MessageFlags.Ephemeral] });
-      if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {
-        return interaction.reply({ content: "❌ You cannot add a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });
-      }
-      try {
-        await member.roles.add(role);
-        return interaction.reply({ content: `✅ Added ${role.name} to ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });
-      } catch (err) {
-        console.error(err);
-        return interaction.reply({ content: `❌ Failed to add the role to ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });
-      }
-    }
-    case "removerole": {
-      const role = interaction.options.getRole("role");
-      const member = interaction.options.getMember("user");
-      if (!role || !member) return interaction.reply({ content: "❌ Role or user not found.", flags: [MessageFlags.Ephemeral] });
-      if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {
-        return interaction.reply({ content: "❌ You cannot remove a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });
-      }
-      try {
-        await member.roles.remove(role);
-        return interaction.reply({ content: `✅ Removed ${role.name} from ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });
-      } catch (err) {
-        console.error(err);
-        return interaction.reply({ content: `❌ Failed to remove the role from ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });
-      }
-    }
-    case "createrole": {
-      const roleName = interaction.options.getString("name");
-      try {
-        await interaction.guild.roles.create({ name: roleName });
-        return interaction.reply({ content: `✅ Role "${roleName}" created.`, flags: [MessageFlags.Ephemeral] });
-      } catch (err) {
-        console.error(err);
-        return interaction.reply({ content: "❌ Failed to create role.", flags: [MessageFlags.Ephemeral] });
-      }
-    }
-    case "deleterole": {
-      const role = interaction.options.getRole("name");
-      if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {
-        return interaction.reply({ content: "❌ You cannot delete a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });
-      }
-      try {
-        await role.delete();
-        return interaction.reply({ content: `✅ Role "${role.name}" deleted.`, flags: [MessageFlags.Ephemeral] });
-      } catch (err) {
-        console.error(err);
-        return interaction.reply({ content: `❌ Failed to delete role "${role.name}".`, flags: [MessageFlags.Ephemeral] });
-      }
-    }
-    case "renamerole": {
-      const oldRole = interaction.options.getRole("old_name");
-      const newName = interaction.options.getString("new_name");
-      if (interaction.member.roles.highest.comparePositionTo(oldRole) <= 0) {
-        return interaction.reply({ content: "❌ You cannot rename a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });
-      }
-      try {
-        await oldRole.setName(newName);
-        return interaction.reply({ content: `✅ Renamed "${oldRole.name}" to "${newName}".`, flags: [MessageFlags.Ephemeral] });
-      } catch (err) {
-        console.error(err);
-        return interaction.reply({ content: "❌ Failed to rename the role.", flags: [MessageFlags.Ephemeral] });
-      }
-    }
-    case "createchannel": {
-      const name = interaction.options.getString("name");
-      try {
-        const ch = await interaction.guild.channels.create({
-          name,
-          type: ChannelType.GuildText,
-        });
-        return interaction.reply({ content: `✅ Channel created: ${ch.toString()}`, flags: [MessageFlags.Ephemeral] });
-      } catch (err) {
-        console.error(err);
-        return interaction.reply({ content: "❌ Failed to create channel.", flags: [MessageFlags.Ephemeral] });
-      }
-    }
-    case "deletechannel": {
-      const ch = interaction.options.getChannel("channel");
-      try {
-        await ch.delete();
-        return interaction.reply({ content: `✅ Channel deleted: ${ch.name}`, flags: [MessageFlags.Ephemeral] });
-      } catch (err) {
-        console.error(err);
-        return interaction.reply({ content: "❌ Failed to delete channel.", flags: [MessageFlags.Ephemeral] });
-      }
-    }
-    case "createprivatechannel": {
-      const user = interaction.options.getMember("user");
-      const adminRole = interaction.guild.roles.cache.find((r) => r.name === ADMIN_ROLE);
-      const overwrites = [
-        { id: interaction.guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-        {
-          id: user.id,
-          allow: [
-            PermissionsBitField.Flags.ViewChannel,
-            PermissionsBitField.Flags.SendMessages,
-            PermissionsBitField.Flags.ReadMessageHistory,
-          ],
-        },
-      ];
-      if (adminRole) {
-        overwrites.push({
-          id: adminRole.id,
-          allow: [
-            PermissionsBitField.Flags.ViewChannel,
-            PermissionsBitField.Flags.SendMessages,
-            PermissionsBitField.Flags.ReadMessageHistory,
-            PermissionsBitField.Flags.ManageChannels,
-          ],
-        });
-      }
-
-      try {
-        const privateCh = await interaction.guild.channels.create({
-          name: `${user.user.username}-private`,
-          type: ChannelType.GuildText,
-          permissionOverwrites: overwrites,
-        });
-        return interaction.reply({ content: `✅ Private channel created: ${privateCh.toString()}`, flags: [MessageFlags.Ephemeral] });
-      } catch (err) {
-        console.error(err);
-        return interaction.reply({ content: "❌ Failed to create private channel.", flags: [MessageFlags.Ephemeral] });
-      }
-    }
-    case "senddm": {
-      const member = interaction.options.getMember("user");
-      const dmMessage = interaction.options.getString("message");
-      try {
-        await member.send(dmMessage);
-        return interaction.reply({ content: `✅ Sent DM to ${member.user.tag}`, flags: [MessageFlags.Ephemeral] });
-      } catch (err) {
-        console.error(err);
-        return interaction.reply({ content: `❌ Could not send DM to ${member.user.tag}. They might have DMs disabled.`, flags: [MessageFlags.Ephemeral] });
-      }
-    }
-    case "delete": {
-      if (!perms.has(PermissionsBitField.Flags.ManageMessages) || !perms.has(PermissionsBitField.Flags.ReadMessageHistory)) {
-        return interaction.reply({
-          content: "❌ I need **Manage Messages** and **Read Message History** in this channel.",
+    let helpMessage = `\`\`\`\n📘 Available Commands\n\nAI (Bot Access or Admin):\n!chat <message>                → Ask AI via AI (no context)\n${SLASH_COMMANDS.filter(cmd => !adminCommands.includes(cmd.name) && (cmd.name === 'setcontext' || cmd.name === 'getcontext' || cmd.name === 'summarize' || cmd.name === 'askquestion')).map(cmd => `/${cmd.name} ${cmd.options.map(opt => `<${opt.name}>`).join(' ')}`.trim()).join('\n')}\n\nModeration (Admin Only):\n${SLASH_COMMANDS.filter(cmd => adminCommands.includes(cmd.name)).map(cmd => `/${cmd.name} ${cmd.options.map(opt => `<${opt.name}>`).join(' ')}`.trim()).join('\n')}\n\nUtility & Fun (Bot Access or Admin):\n!help                          → Show this help message\n${SLASH_COMMANDS.filter(cmd => !adminCommands.includes(cmd.name) && (cmd.name === 'ping' || cmd.name === 'userinfo' || cmd.name === 'serverinfo' || cmd.name === 'avatar' || cmd.name === 'embed' || cmd.name === 'poll' || cmd.name === '8ball' || cmd.name === 'randomfact')).map(cmd => `/${cmd.name} ${cmd.options.map(opt => `<${opt.name}>`).join(' ')}`.trim()).join('\n')}\`\`\`;\n    // Fix: Defer reply and split the message to avoid character limit issues\n    await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });\n    const helpChunks = splitMessage(helpMessage);\n    await interaction.editReply({ content: helpChunks[0] });\n    for (let i = 1; i < helpChunks.length; i++) {\n        await interaction.followUp({ content: helpChunks[i], flags: [MessageFlags.Ephemeral] });\n    }\n    return;\n  }\n\n  // Bot Access check for all commands (except 'help')\n  if (!canUseBot) {\n    return interaction.reply({ content: `❌ You need the "${BOT_ACCESS_ROLE}" role or Administrator permissions to use this bot.`, flags: [MessageFlags.Ephemeral] });\n  }\n\n  // Admin-only slash commands\n  if (adminCommands.includes(interaction.commandName) && !isUserAdmin) {\n    return interaction.reply({ content: "❌ You don't have permission to use this command.", flags: [MessageFlags.Ephemeral] });\n  }\n\n  switch (interaction.commandName) {\n    // Existing commands\n    case "setcontext": {\n      const newContext = interaction.options.getString("text");\n      contextPrompt = newContext;\n      return interaction.reply({ content: "✅ AI context updated successfully!", flags: [MessageFlags.Ephemeral] });\n    }\n    case "getcontext": {\n  return interaction.reply({ content: `✅ The current AI context is:\n\`\`\`${contextPrompt}\`\`\``, flags: [MessageFlags.Ephemeral] });\n}\n    case "addrole": {\n      const role = interaction.options.getRole("role");\n      const member = interaction.options.getMember("user");\n      if (!role || !member) return interaction.reply({ content: "❌ Role or user not found.", flags: [MessageFlags.Ephemeral] });\n      if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {\n        return interaction.reply({ content: "❌ You cannot add a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });\n      }\n      try {\n        await member.roles.add(role);\n        return interaction.reply({ content: `✅ Added ${role.name} to ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });\n      } catch (err) {\n        console.error(err);\n        return interaction.reply({ content: `❌ Failed to add the role to ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });\n      }\n    }\n    case "removerole": {\n      const role = interaction.options.getRole("role");\n      const member = interaction.options.getMember("user");\n      if (!role || !member) return interaction.reply({ content: "❌ Role or user not found.", flags: [MessageFlags.Ephemeral] });\n      if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {\n        return interaction.reply({ content: "❌ You cannot remove a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });\n      }\n      try {\n        await member.roles.remove(role);\n        return interaction.reply({ content: `✅ Removed ${role.name} from ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });\n      } catch (err) {\n        console.error(err);\n        return interaction.reply({ content: `❌ Failed to remove the role from ${member.user.tag}.`, flags: [MessageFlags.Ephemeral] });\n      }\n    }\n    case "createrole": {\n      const roleName = interaction.options.getString("name");\n      try {\n        await interaction.guild.roles.create({ name: roleName });\n        return interaction.reply({ content: `✅ Role "${roleName}" created.`, flags: [MessageFlags.Ephemeral] });\n      } catch (err) {\n        console.error(err);\n        return interaction.reply({ content: "❌ Failed to create role.", flags: [MessageFlags.Ephemeral] });\n      }\n    }\n    case "deleterole": {\n      const role = interaction.options.getRole("name");\n      if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {\n        return interaction.reply({ content: "❌ You cannot delete a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });\n      }\n      try {\n        await role.delete();\n        return interaction.reply({ content: `✅ Role "${role.name}" deleted.`, flags: [MessageFlags.Ephemeral] });\n      } catch (err) {\n        console.error(err);\n        return interaction.reply({ content: `❌ Failed to delete role "${role.name}".`, flags: [MessageFlags.Ephemeral] });\n      }\n    }\n    case "renamerole": {\n      const oldRole = interaction.options.getRole("old_name");\n      const newName = interaction.options.getString("new_name");\n      if (interaction.member.roles.highest.comparePositionTo(oldRole) <= 0) {\n        return interaction.reply({ content: "❌ You cannot rename a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });\n      }\n      try {\n        await oldRole.setName(newName);\n        return interaction.reply({ content: `✅ Renamed "${oldRole.name}" to "${newName}".`, flags: [MessageFlags.Ephemeral] });\n      } catch (err) {\n        console.error(err);\n        return interaction.reply({ content: "❌ Failed to rename the role.", flags: [MessageFlags.Ephemeral] });\n      }\n    }\n    case "createchannel": {\n      const name = interaction.options.getString("name");\n      try {\n        const ch = await interaction.guild.channels.create({\n          name,\n          type: ChannelType.GuildText,\n        });\n        return interaction.reply({ content: `✅ Channel created: ${ch.toString()}`, flags: [MessageFlags.Ephemeral] });\n      } catch (err) {\n        console.error(err);\n        return interaction.reply({ content: "❌ Failed to create channel.", flags: [MessageFlags.Ephemeral] });\n      }\n    }\n    case "deletechannel": {\n      const ch = interaction.options.getChannel("channel");\n      try {\n        await ch.delete();\n        return interaction.reply({ content: `✅ Channel deleted: ${ch.name}`, flags: [MessageFlags.Ephemeral] });\n      } catch (err) {\n        console.error(err);\n        return interaction.reply({ content: "❌ Failed to delete channel.", flags: [MessageFlags.Ephemeral] });\n      }\n    }\n    case "createprivatechannel": {\n      const user = interaction.options.getMember("user");\n      const adminRole = interaction.guild.roles.cache.find((r) => r.name === ADMIN_ROLE);\n      const overwrites = [\n        { id: interaction.guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },\n        {\n          id: user.id,\n          allow: [\n            PermissionsBitField.Flags.ViewChannel,\n            PermissionsBitField.Flags.SendMessages,\n            PermissionsBitField.Flags.ReadMessageHistory,\n          ],\n        },\n      ];\n      if (adminRole) {\n        overwrites.push({\n          id: adminRole.id,\n          allow: [\n            PermissionsBitField.Flags.ViewChannel,\n            PermissionsBitField.Flags.SendMessages,\n            PermissionsBitField.Flags.ReadMessageHistory,\n            PermissionsBitField.Flags.ManageChannels,\n          ],\n        });\n      }\n\n      try {\n        const privateCh = await interaction.guild.channels.create({\n          name: `${user.user.username}-private`,\n          type: ChannelType.GuildText,\n          permissionOverwrites: overwrites,\n        });\n        return interaction.reply({ content: `✅ Private channel created: ${privateCh.toString()}`, flags: [MessageFlags.Ephemeral] });\n      } catch (err) {\n        console.error(err);\n        return interaction.reply({ content: "❌ Failed to create private channel.", flags: [MessageFlags.Ephemeral] });\n      }\n    }\n    case "senddm": {\n      const member = interaction.options.getMember("user");\n      const dmMessage = interaction.options.getString("message");\n      try {\n        await member.send(dmMessage);\n        return interaction.reply({ content: `✅ Sent DM to ${member.user.tag}`, flags: [MessageFlags.Ephemeral] });\n      } catch (err) {\n        console.error(err);\n        return interaction.reply({ content: `❌ Could not send DM to ${member.user.tag}. They might have DMs disabled.`, flags: [MessageFlags.Ephemeral] });\n      }\n    }\n    case "delete": {\n      if (!perms.has(PermissionsBitField.Flags.ManageMessages) || !perms.has(PermissionsBitField.Flags.ReadMessageHistory)) {\n        return interaction.reply({\n          content: "❌ I need **Manage Messages** and **Read Message History** in this channel.",
           flags: [MessageFlags.Ephemeral],
         });
       }
@@ -1320,128 +943,41 @@ client.on("messageCreate", async (message) => {
   const command = args.shift()?.toLowerCase();
   const isCommandAllowed = hasBotAccess(message.member);
   
-  // Admin check for legacy '!' commands (excluding !chat and !help)
-  if (command !== "!chat" && command !== "!help" && command?.startsWith("!")) {
-    if (!isAdministrator(message.member)) {
-      return message.channel.send("❌ You don't have permission to use this command.");
-    }
-    message.channel.send("❌ This `!` command has been moved to a slash command. Use `/` instead.");
-    return;
-  }
-
-  // Help
-  if (command === "!help") {
-    let helpMessage = `
-\`\`\`
-📘 Available Commands
-
-AI (Bot Access or Admin):
-!chat <message>                → Ask AI via AI (no context)
-/setcontext <text>             → Update AI response behavior (Admin)
-/getcontext                    → Get AI context (Admin)
-/summarize <amount>            → Summarize recent messages (Bot Access or Admin)
-/askquestion <question>          → Ask AI a question (Bot Access or Admin)
-
-Moderation (Admin Only):
-/kick <user> [reason]          → Kick a user
-/ban <user> [reason]           → Ban a user
-/timeout <user> <duration>     → Time out a user for a duration
-/untimeout <user>              → Remove a timeout
-/warn <user> <reason>          → Warn a user
-/nick <user> <nickname>        → Change a user's nickname
-/slowmode <duration>           → Set channel slowmode
-/lock                          → Lock a channel
-/unlock                        → Unlock a channel
-/delete <amount>               → Delete 1–100 recent messages
-/deleteall                     → Purge recent messages
-/addrole <role> <user>         → Assign a role to a user
-/removerole <role> <user>      → Remove a role from a user
-/createrole <name>             → Create a new role
-/deleterole <name>             → Delete a role
-/renamerole <old> <new>        → Rename a role
-/createchannel <name>          → Create a text channel
-/deletechannel <#channel>      → Delete a text channel
-/createprivatechannel <user>   → Private channel for a user + Admins
-/senddm <user> <message>       → Send a DM to a user
-/verify usr                    → Add the "Students" role to a user
-
-Utility & Fun (Bot Access or Admin):
-!help                          → Show this help message
-/ping                          → Check bot latency
-/userinfo [user]               → Display user info
-/serverinfo                    → Display server info
-/avatar [user]                 → Get a user's avatar
-/embed <title> <desc> [color]  → Send a custom embed
-/poll <question>               → Create a yes/no poll
-/8ball <question>              → Ask the 8-ball
-/randomfact                    → Get a random fact
-\`\`\`
-`;
-    // Fix: Use the existing splitMessage helper to break the long string.
-    splitMessage(helpMessage).forEach((msg) => message.channel.send(msg));
-  }
-
-  // Chat via Gemini (Corrected)
-  if (command === "!chat") {
-    if (!isCommandAllowed) {
-      return message.channel.send(`❌ You need the "${BOT_ACCESS_ROLE}" role or Administrator permissions to use this bot.`);
-    }
-    const userMention = message.mentions.users.first();
-    const channelMention = message.mentions.channels.first();
-    
-    const prompt = args.filter(arg => !arg.startsWith('<@') && !arg.startsWith('<#')).join(' ');
-    
-    if (!prompt) {
-      return message.channel.send("Usage: !chat <message> [#channel] [@user]");
-    }
-    const targetChannel = channelMention || message.channel;
-
-    try {
-      const result = await model.generateContent(prompt);
-      const response = await result.response.text();
-      let reply = userMention ? `${userMention}, ${response}` : response;
-      splitMessage(reply).forEach((chunk) => targetChannel.send(chunk));
-    } catch (err) {
-      console.error(err);
-      message.channel.send("❌ Error while executing AI chat.");
-    }
-  }
-
   // Role Commands
   if (command === "!addrole") {
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/addrole` instead.");
   }
-
+ 
   if (command === "!removerole") {
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/removerole` instead.");
   }
-
+ 
   if (command === "!createrole") {
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/createrole` instead.");
   }
-
+ 
   if (command === "!deleterole") {
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/deleterole` instead.");
   }
-
+ 
   if (command === "!renamerole") {
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/renamerole` instead.");
   }
-
+ 
   // Channel Commands
   if (command === "!createchannel") {
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/createchannel` instead.");
   }
-
+ 
   if (command === "!deletechannel") {
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/deletechannel` instead.");
   }
-
+ 
   // Private Channel
   if (command === "!createprivatechannel") {
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/createprivatechannel` instead.");
   }
-
+ 
   // Send DM (corrected logic)
   if (command === "!senddm") {
     message.channel.send("❌ This `!` command has been moved to a slash command. Use `/senddm` instead.");
