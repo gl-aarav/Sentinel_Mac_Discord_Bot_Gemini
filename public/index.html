@@ -164,20 +164,20 @@
     </header>
 
     <main class="container">
-        <section id="status" class="bot-status fade-in">
+        <section id="status" class="bot-status">
             <h2>Bot Status</h2>
             <p>Status: <span id="bot-status"><span class="status-indicator status-offline"></span> Offline</span></p>
             <p>Latency: <span id="bot-latency">N/A</span></p>
             <p>Uptime: <span id="bot-uptime">N/A</span></p>
         </section>
 
-        <section id="about" class="fade-in">
+        <section id="about">
             <h2>About Sentinel</h2>
             <p>The Sentinel Discord Bot is an advanced AI-powered assistant designed to enhance your Discord server experience. Leveraging the power of Google's Gemini AI, it offers a wide range of functionalities from general chat and moderation to fun and utility commands.</p>
             <p>With features like intelligent response generation, comprehensive moderation tools, and interactive commands, Sentinel aims to make server management easier and user interaction more engaging. It's built to be flexible and helpful, adapting to your server's needs.</p>
         </section>
 
-        <section id="commands" class="fade-in">
+        <section id="commands">
             <h2>Commands</h2>
             <div id="commands-list" class="commands-list">
                 <!-- Commands will be dynamically loaded here -->
@@ -324,7 +324,7 @@
             </div>
         </section>
 
-        <section id="contact" class="fade-in">
+        <section id="contact">
             <h2>Contact & Support</h2>
             <p>For support, feature requests, or any questions, please join our Discord server: <a href="https://discord.gg/ZJNQQ3YT" target="_blank" style="color: var(--primary-color); font-weight: bold;">https://discord.gg/ZJNQQ3YT</a> or contact us via email at <a href="mailto:gl.aarav@gmail.com" style="color: var(--primary-color);">gl.aarav@gmail.com</a>.</p>
             <p>We're always looking to improve Sentinel and appreciate your feedback!</p>
@@ -342,9 +342,6 @@
             const botUptimeSpan = document.getElementById('bot-uptime');
             const commandsListDiv = document.getElementById('commands-list');
 
-<<<<<<< HEAD
-    <script src="scripts/main.js" type="module"></script>
-=======
             async function fetchBotStatus() {
                 try {
                     const response = await fetch('/api/bot-status');
@@ -398,6 +395,5 @@
             setInterval(fetchBotStatus, 30000); // Update status every 30 seconds
       });
     </script>
->>>>>>> parent of 463a6e2 (updates)
   </body>
 </html>
