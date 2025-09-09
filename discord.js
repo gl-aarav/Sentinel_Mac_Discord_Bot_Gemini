@@ -656,8 +656,8 @@ async function registerSlashCommandsForGuild(guildId) {
     await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: [] });
     console.log(`Cleared existing commands in guild ${guildId}`);
     // Register new commands
-    // await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: SLASH_COMMANDS });
-    // console.log(`✅ Registered slash commands in guild ${guildId}`);
+    await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: SLASH_COMMANDS });
+    console.log(`✅ Registered slash commands in guild ${guildId}`);
   } catch (err) {
     console.error(`Error registering slash commands in guild ${guildId}:`, err);
   }
