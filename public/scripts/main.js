@@ -13,8 +13,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const observer = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
+            console.log(`Observing ${entry.target.id}: isIntersecting = ${entry.isIntersecting}`);
             if (entry.isIntersecting) {
                 entry.target.classList.add('is-visible');
+                console.log(`Added is-visible to ${entry.target.id}`);
                 observer.unobserve(entry.target);
             }
         });
@@ -43,17 +45,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupModal();
 });
 
-// Add this to your main.js file
 function setupModal() {
     const modal = document.getElementById('command-modal');
     const closeBtn = document.querySelector('.close-button');
 
-    // Close the modal
     closeBtn.onclick = function() {
         modal.style.display = "none";
     };
 
-    // Close modal if user clicks outside of it
     window.onclick = function(event) {
         if (event.target == modal) {
             modal.style.display = "none";
@@ -61,13 +60,12 @@ function setupModal() {
     };
 }
 
-// Function to populate and show the modal
 export function showCommandModal(command) {
     const modal = document.getElementById('command-modal');
     document.getElementById('modal-title').textContent = command.name;
     document.getElementById('modal-description').textContent = command.description;
     const detailsDiv = document.getElementById('modal-details');
-    detailsDiv.innerHTML = ''; // Clear previous content
+    detailsDiv.innerHTML = '';
 
     if (command.admin) {
         detailsDiv.innerHTML += '<p><strong>Permissions:</strong> Admin</p>';

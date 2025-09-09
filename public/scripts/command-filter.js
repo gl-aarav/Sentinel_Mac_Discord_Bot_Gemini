@@ -1,4 +1,4 @@
-import { showCommandModal } from './main.js';
+import { showCommandModal } from '../main.js';
 
 export function setupCommandFilter(commands) {
     const searchInput = document.getElementById('command-filter');

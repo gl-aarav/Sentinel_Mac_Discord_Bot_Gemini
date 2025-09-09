@@ -20,12 +20,16 @@ app.get("/api/bot-status", (req, res) => {
       status: "online",
       latency: client.ws.ping,
       uptime: client.uptime,
+      guilds: client.guilds.cache.size,
+      users: client.users.cache.size,
     });
   } else {
     res.json({
       status: "offline",
       latency: "N/A",
       uptime: "N/A",
+      guilds: "N/A",
+      users: "N/A",
     });
   }
 });
