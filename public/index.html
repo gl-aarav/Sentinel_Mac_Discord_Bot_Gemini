@@ -550,6 +550,31 @@
         const botUptimeSpan = document.getElementById('bot-uptime');
         const commandsListDiv = document.getElementById('commands-list');
 
+        let initialUptime = 0; // Store initial uptime from the bot
+        let uptimeIntervalId = null; // To store the interval ID for uptime updates
+
+        function updateUptimeDisplay(totalSeconds) {
+          const days = Math.floor(totalSeconds / (3600 * 24));
+          const hours = Math.floor((totalSeconds % (3600 * 24)) / 3600);
+          const minutes = Math.floor((totalSeconds % 3600) / 60);
+          const seconds = totalSeconds % 60;
+
+          let uptimeString = '';
+          if (days > 0) {
+            uptimeString += `${days}d `;
+          }
+          if (hours > 0 || days > 0) {
+            // Display hours if there are any, or if there are days (to show full hh:mm:ss)
+            uptimeString += `${hours}h `;
+          }
+          if (minutes > 0 || hours > 0 || days > 0) {
+            // Display minutes if there are any, or if there are hours/days
+            uptimeString += `${minutes}m `;
+          }
+          uptimeString += `${seconds}s`;
+          botUptimeSpan.textContent = uptimeString.trim();
+        }
+
         async function fetchBotStatus() {
           try {
             const response = await fetch('/api/bot-status');
@@ -559,15 +584,27 @@
               botStatusSpan.innerHTML = `<span class="status-indicator status-online"></span> Online`;
               botLatencySpan.textContent = `${data.latency}ms`;
               // Convert uptime from milliseconds to a human-readable format
-              const uptimeSeconds = Math.floor(data.uptime / 1000);
-              const hours = Math.floor(uptimeSeconds / 3600);
-              const minutes = Math.floor((uptimeSeconds % 3600) / 60);
-              const seconds = uptimeSeconds % 60;
-              botUptimeSpan.textContent = `${hours}h ${minutes}m ${seconds}s`;
+              initialUptime = Math.floor(data.uptime / 1000);
+              updateUptimeDisplay(initialUptime);
+
+              // Clear any existing uptime interval to prevent multiple intervals running
+              if (uptimeIntervalId) {
+                clearInterval(uptimeIntervalId);
+              }
+              // Start new interval for uptime
+              let currentUptime = initialUptime;
+              uptimeIntervalId = setInterval(() => {
+                currentUptime++;
+                updateUptimeDisplay(currentUptime);
+              }, 1000);
             } else {
               botStatusSpan.innerHTML = `<span class="status-indicator status-offline"></span> Offline`;
               botLatencySpan.textContent = 'N/A';
               botUptimeSpan.textContent = 'N/A';
+              if (uptimeIntervalId) {
+                clearInterval(uptimeIntervalId);
+                uptimeIntervalId = null;
+              }
             }
           } catch (error) {
             console.error('Error fetching bot status:', error);
