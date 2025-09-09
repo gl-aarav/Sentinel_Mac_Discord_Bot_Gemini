@@ -20,16 +20,12 @@ app.get("/api/bot-status", (req, res) => {
       status: "online",
       latency: client.ws.ping,
       uptime: client.uptime,
-      guilds: client.guilds.cache.size,
-      users: client.users.cache.size,
     });
   } else {
     res.json({
       status: "offline",
       latency: "N/A",
       uptime: "N/A",
-      guilds: "N/A",
-      users: "N/A",
     });
   }
 });
@@ -656,8 +652,8 @@ async function registerSlashCommandsForGuild(guildId) {
     await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: [] });
     console.log(`Cleared existing commands in guild ${guildId}`);
     // Register new commands
-    await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: SLASH_COMMANDS });
-    console.log(`✅ Registered slash commands in guild ${guildId}`);
+    // await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: SLASH_COMMANDS });
+    // console.log(`✅ Registered slash commands in guild ${guildId}`);
   } catch (err) {
     console.error(`Error registering slash commands in guild ${guildId}:`, err);
   }
