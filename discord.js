@@ -1300,6 +1300,31 @@ Moderation (Admin Only):
   }
 });
 
+// ==================== Welcome New Members ====================
+client.on('guildMemberAdd', async (member) => {
+  try {
+    // Get the system channel (where Discord sends join messages by default)
+    const channel = member.guild.systemChannel;
+    if (!channel) return; // No system channel set up
+
+    // Create the welcome message with the requested format
+    const welcomeMessage = `Welcome ${member} to **${member.guild.name}**! You are the ${member.guild.memberCount}th member!
+
+To learn more about the club go to: https://tinyurl.com/joinmlclub
+
+Enter your first and last name in <#1412627604577587285> as well as your grade to get verified!
+
+Ex: 
+Name: Aarav Goyal
+Grade: 10`;
+
+    // Send the welcome message
+    await channel.send(welcomeMessage);
+  } catch (error) {
+    console.error('Error sending welcome message:', error);
+  }
+});
+
 // ==================== Message Commands Handler ====================
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
