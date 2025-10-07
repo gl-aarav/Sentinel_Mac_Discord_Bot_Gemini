@@ -1315,11 +1315,9 @@ Name: Aarav Goyal
 Grade: 10`;
 
     // Send DM to the new member
-    try {
-      await member.send(welcomeMessage);
-    } catch (error) {
-      console.error(`Could not send DM to ${member.user.tag}`);
-    }
+    await member.send(welcomeMessage).catch(error => {
+      console.error(`Could not send DM to ${member.user.tag}:`, error);
+    });
 
     // Send welcome message to the specified channel
     const welcomeChannel = member.guild.channels.cache.get('1404486672581656577');
@@ -1352,11 +1350,6 @@ Grade: 10`;
         }]
       });
     }
-
-    // Send the welcome message as a DM
-    await member.send(welcomeMessage).catch(error => {
-      console.error(`Could not send DM to ${member.user.tag}:`, error);
-    });
   } catch (error) {
     console.error('Error sending welcome message:', error);
   }
