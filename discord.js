@@ -1301,8 +1301,8 @@ Moderation (Admin Only):
 });
 
 // ==================== Welcome New Members ====================
-const fs = require('fs').promises;
-const path = require('path');
+const fs = require('fs');
+const fsp = fs.promises;
 
 // Persistent storage for welcomed members
 const WELCOME_FILE = path.join(__dirname, 'welcome_logs.json');
@@ -1313,7 +1313,7 @@ let welcomeLogs = {};
 
 async function loadWelcomeLogs() {
   try {
-    const data = await fs.readFile(WELCOME_FILE, 'utf8');
+    const data = await fsp.readFile(WELCOME_FILE, 'utf8');
     welcomeLogs = JSON.parse(data);
   } catch (error) {
     if (error.code === 'ENOENT') {
@@ -1327,7 +1327,7 @@ async function loadWelcomeLogs() {
 
 async function saveWelcomeLogs() {
   try {
-    await fs.writeFile(WELCOME_FILE, JSON.stringify(welcomeLogs, null, 2));
+    await fsp.writeFile(WELCOME_FILE, JSON.stringify(welcomeLogs, null, 2));
   } catch (error) {
     console.error('Error saving welcome logs:', error);
   }
