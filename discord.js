@@ -596,7 +596,7 @@ function hasBotAccess(member) {
 function splitMessage(message) {
   const chunks = [];
   while (message.length > 0) {
-    let chunk = message.slice(0,1575);
+    let chunk = message.slice(0, 1575);
 
     // Prefer to cut at the last newline if one exists in this chunk
     const lastNewline = chunk.lastIndexOf("\n");
@@ -765,7 +765,7 @@ Moderation (Admin Only):
     const helpChunks = splitMessage(helpMessage);
     await interaction.editReply({ content: helpChunks[0] });
     for (let i = 1; i < helpChunks.length; i++) {
-        await interaction.followUp({ content: helpChunks[i], flags: [MessageFlags.Ephemeral] });
+      await interaction.followUp({ content: helpChunks[i], flags: [MessageFlags.Ephemeral] });
     }
     return;
   }
@@ -789,8 +789,8 @@ Moderation (Admin Only):
       return interaction.reply({ content: "✅ AI context updated successfully!", flags: [MessageFlags.Ephemeral] });
     }
     case "getcontext": {
-  return interaction.reply({ content: `✅ The current AI context is:\n\`\`\`${contextPrompt}\`\`\``, flags: [MessageFlags.Ephemeral] });
-}
+      return interaction.reply({ content: `✅ The current AI context is:\n\`\`\`${contextPrompt}\`\`\``, flags: [MessageFlags.Ephemeral] });
+    }
     case "addrole": {
       const role = interaction.options.getRole("role");
       const member = interaction.options.getMember("user");
@@ -1100,7 +1100,7 @@ Moderation (Admin Only):
         await user.send(`⚠️ You have been warned in ${interaction.guild.name}. Reason: ${reason}`);
         return interaction.reply({ content: `✅ Warned ${user.user.tag}. Reason: ${reason}`, flags: [MessageFlags.Ephemeral] });
       } catch (err) {
-                console.error(err);
+        console.error(err);
         return interaction.reply({ content: "❌ Failed to warn user. They may have DMs disabled.", flags: [MessageFlags.Ephemeral] });
       }
     }
@@ -1306,7 +1306,7 @@ client.on('guildMemberAdd', async (member) => {
     // Create the welcome message with the requested format
     const welcomeMessage = `Welcome to **${member.guild.name}**! You are the ${member.guild.memberCount}th member!
 
-To learn more about the club go to: https://tinyurl.com/joinmlclub
+To learn more about the club go to: https://tinyurl.com/mlatmv2025
 
 Enter your first and last name in <#1412627604577587285> as well as your grade to get verified!
 
@@ -1342,7 +1342,7 @@ client.on("messageCreate", async (message) => {
   const args = message.content.trim().split(/\s+/);
   const command = args.shift()?.toLowerCase();
   const isCommandAllowed = hasBotAccess(message.member);
-  
+
   // Admin check for legacy '!' commands (excluding !chat and !help)
   if (command !== "!chat" && command !== "!help" && command?.startsWith("!")) {
     if (!isAdministrator(message.member)) {
@@ -1411,9 +1411,9 @@ Utility & Fun (Bot Access or Admin):
     }
     const userMention = message.mentions.users.first();
     const channelMention = message.mentions.channels.first();
-    
+
     const prompt = args.filter(arg => !arg.startsWith('<@') && !arg.startsWith('<#')).join(' ');
-    
+
     if (!prompt) {
       return message.channel.send("Usage: !chat <message> [#channel] [@user]");
     }
