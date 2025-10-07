@@ -1303,12 +1303,8 @@ Moderation (Admin Only):
 // ==================== Welcome New Members ====================
 client.on('guildMemberAdd', async (member) => {
   try {
-    // Get the system channel (where Discord sends join messages by default)
-    const channel = member.guild.systemChannel;
-    if (!channel) return; // No system channel set up
-
     // Create the welcome message with the requested format
-    const welcomeMessage = `Welcome ${member} to **${member.guild.name}**! You are the ${member.guild.memberCount}th member!
+    const welcomeMessage = `Welcome to **${member.guild.name}**! You are the ${member.guild.memberCount}th member!
 
 To learn more about the club go to: https://tinyurl.com/joinmlclub
 
@@ -1318,8 +1314,10 @@ Ex:
 Name: Aarav Goyal
 Grade: 10`;
 
-    // Send the welcome message
-    await channel.send(welcomeMessage);
+    // Send the welcome message as a DM
+    await member.send(welcomeMessage).catch(error => {
+      console.error(`Could not send DM to ${member.user.tag}:`, error);
+    });
   } catch (error) {
     console.error('Error sending welcome message:', error);
   }
