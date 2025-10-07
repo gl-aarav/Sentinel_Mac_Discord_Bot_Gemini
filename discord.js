@@ -1301,15 +1301,71 @@ Moderation (Admin Only):
 });
 
 // ==================== Welcome New Members ====================
-// Track processed members to prevent duplicate welcome messages
-const welcomeProcessed = new Set();
+const fs = require('fs').promises;
+const path = require('path');
+
+// Persistent storage for welcomed members
+const WELCOME_FILE = path.join(__dirname, 'welcome_logs.json');
+const WELCOME_COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours cooldown
+
+// Load welcome logs from file
+let welcomeLogs = {};
+
+async function loadWelcomeLogs() {
+  try {
+    const data = await fs.readFile(WELCOME_FILE, 'utf8');
+    welcomeLogs = JSON.parse(data);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      // File doesn't exist yet, will be created on first save
+      welcomeLogs = {};
+    } else {
+      console.error('Error loading welcome logs:', error);
+    }
+  }
+}
+
+async function saveWelcomeLogs() {
+  try {
+    await fs.writeFile(WELCOME_FILE, JSON.stringify(welcomeLogs, null, 2));
+  } catch (error) {
+    console.error('Error saving welcome logs:', error);
+  }
+}
+
+// Clean up old entries (older than 7 days)
+async function cleanupWelcomeLogs() {
+  const now = Date.now();
+  const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
+  
+  for (const [key, timestamp] of Object.entries(welcomeLogs)) {
+    if (timestamp < weekAgo) {
+      delete welcomeLogs[key];
+    }
+  }
+  
+  await saveWelcomeLogs();
+}
+
+// Initialize
+loadWelcomeLogs().then(() => {
+  // Clean up on startup and then every 24 hours
+  cleanupWelcomeLogs();
+  setInterval(cleanupWelcomeLogs, 24 * 60 * 60 * 1000);
+});
 
 client.on('guildMemberAdd', async (member) => {
   const memberKey = `${member.guild.id}-${member.id}`;
+  const now = Date.now();
   
-  // Skip if we've already processed this member
-  if (welcomeProcessed.has(memberKey)) return;
-  welcomeProcessed.add(memberKey);
+  // Check if we've processed this member recently
+  if (welcomeLogs[memberKey] && (now - welcomeLogs[memberKey] < WELCOME_COOLDOWN)) {
+    return; // Skip if already welcomed within cooldown period
+  }
+  
+  // Update welcome timestamp
+  welcomeLogs[memberKey] = now;
+  await saveWelcomeLogs();
   
   try {
     // Create the welcome message with the requested format
