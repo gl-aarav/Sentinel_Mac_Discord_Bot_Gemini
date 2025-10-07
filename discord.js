@@ -1301,7 +1301,16 @@ Moderation (Admin Only):
 });
 
 // ==================== Welcome New Members ====================
+// Track processed members to prevent duplicate welcome messages
+const welcomeProcessed = new Set();
+
 client.on('guildMemberAdd', async (member) => {
+  const memberKey = `${member.guild.id}-${member.id}`;
+  
+  // Skip if we've already processed this member
+  if (welcomeProcessed.has(memberKey)) return;
+  welcomeProcessed.add(memberKey);
+  
   try {
     // Create the welcome message with the requested format
     const welcomeMessage = `Welcome to **${member.guild.name}**! You are the ${member.guild.memberCount}th member!
