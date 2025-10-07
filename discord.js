@@ -1354,6 +1354,31 @@ loadWelcomeLogs().then(() => {
   setInterval(cleanupWelcomeLogs, 24 * 60 * 60 * 1000);
 });
 
+// Handle member leaving the server
+client.on('guildMemberRemove', async (member) => {
+  try {
+    const leaveChannel = member.guild.channels.cache.get('1404486672581656577');
+    if (leaveChannel) {
+      await leaveChannel.send({
+        embeds: [{
+          color: 0xff0000,
+          title: '👋 Member Left',
+          description: `**${member.user.tag}** has left the server.\nWe now have ${member.guild.memberCount} members.`,
+          thumbnail: {
+            url: member.user.displayAvatarURL({ dynamic: true, size: 256 })
+          },
+          timestamp: new Date(),
+          footer: {
+            text: `User ID: ${member.id}`
+          }
+        }]
+      });
+    }
+  } catch (error) {
+    console.error('Error sending leave message:', error);
+  }
+});
+
 client.on('guildMemberAdd', async (member) => {
   const memberKey = `${member.guild.id}-${member.id}`;
   const now = Date.now();
