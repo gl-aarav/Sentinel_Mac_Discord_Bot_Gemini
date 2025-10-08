@@ -204,18 +204,7 @@
       }
 
       /* Glassmorphism effect on sections */
-      section {
-        background-color: rgba(40, 43, 47, 0.5);
-        backdrop-filter: blur(4px);
-        padding: 2.5rem;
-        margin-bottom: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        border: 1px solid var(--border-color);
-      }
-
-      h2 {
-        font-size: 2.5rem;
+      .feature-grid {
         font-weight: 700;
         color: var(--primary-color);
         text-align: center;
@@ -223,29 +212,70 @@
         position: relative;
       }
 
-      h2::after {
-        content: '';
-        position: absolute;
-        width: 80px;
-        height: 4px;
-        background-color: var(--primary-color);
-        bottom: -10px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-radius: 2px;
-      }
+      /* Removed blue line from about section */
 
       .bot-status {
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
+        background-color: rgba(40, 43, 47, 0.5);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 12px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        max-width: 600px;
+        margin: 2rem auto 3rem;
+        transition: all 0.3s ease;
+        position: relative;
+      }
+      
+      .bot-status::after {
+        content: '';
+        position: absolute;
+        width: 80px;
+        height: 4px;
+        background-color: var(--primary-color);
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 2px;
+      }
+
+      .bot-status:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(88, 101, 242, 0.2);
       }
 
       .bot-status p {
         font-family: 'Roboto Mono', monospace;
         font-size: 1.1rem;
-        margin: 0.5rem 0;
+        margin: 0.75rem 0;
+        color: var(--text-color);
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .bot-status h2 {
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        font-size: 1.8rem;
+        position: relative;
+        padding-bottom: 0.5rem;
+      }
+
+      .bot-status h2::after {
+        content: '';
+        position: absolute;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-color), transparent);
+        bottom: -5px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 3px;
       }
 
       /* Enhanced status indicator animation */
@@ -287,17 +317,45 @@
 
       .commands-list {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 1.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .feature-card {
+        background-color: var(--card-background);
+        border-radius: 10px;
+        padding: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid var(--border-color);
+      }
+
+      .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      }
+
+      .feature-card h3 {
+        color: var(--primary-color);
+        margin-top: 0;
+        margin-bottom: 0.75rem;
+        font-size: 1.25rem;
+      }
+
+      .feature-card p {
+        color: var(--text-color);
+        margin: 0;
+        line-height: 1.5;
+        font-size: 0.95rem;
       }
 
       .command-card {
-        background-color: rgba(44, 47, 51, 0.4);
-        backdrop-filter: blur(3px);
+        background-color: var(--card-background);
+        border-radius: 8px;
         padding: 1.5rem;
-        border-radius: 10px;
-        border: 1px solid var(--border-color);
+        margin-bottom: 1.5rem;
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid var(--border-color);
       }
 
       .command-card:hover {
@@ -398,6 +456,28 @@
           server management easier and user interaction more engaging. It's
           built to be flexible and helpful, adapting to your server's needs.
         </p>
+      </section>
+
+      <section id="welcome-features" class="slide-up">
+        <h2>Welcome & Goodbye Messages</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3>Welcome DMs</h3>
+            <p>Automatically send personalized welcome messages to new members via direct message when they join your server.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Channel Welcome Messages</h3>
+            <p>Welcome new members with custom messages in your designated welcome channel, complete with user mentions and server information.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Goodbye Messages</h3>
+            <p>Automatically post messages when members leave your server, helping to maintain an active and engaged community.</p>
+          </div>
+          <div class="feature-card">
+            <h3>Customization</h3>
+            <p>Fully customize all messages with placeholders for usernames, server names, and more to make each message unique.</p>
+          </div>
+        </div>
       </section>
 
       <section id="commands" class="slide-up">
