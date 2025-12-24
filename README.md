@@ -17,7 +17,7 @@ Sentinel is a sophisticated Discord bot designed to elevate your server's experi
 Visit our official website to check the bot's status and learn more:
 [Sentinel Discord Bot](https://sentinel-discordbot.onrender.com)
 
-For support, feature requests, or any questions, please join our Discord server: [https://discord.gg/ZJNQQ3YT](https://discord.gg/ZJNQQ3YT) or contact us via email at gl.aarav@gmail.com.
+For support, feature requests, or any questions, please contact us via email at gl.aarav@gmail.com.
 
 We are always striving to improve Sentinel and greatly appreciate your feedback!
 
@@ -65,42 +65,3 @@ Sentinel offers a wide array of commands, accessible via slash commands (`/`) an
 - `/poll <question>`: Create a simple yes/no poll.
 - `/8ball <question>`: Answers a yes/no question with a magical 8-ball response.
 - `/randomfact`: Get a random fun fact.
-
-## ⚙️ Installation
-
-To run Sentinel on your own server, follow these steps:
-
-1.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/AaravGoyal/GeminiDiscordBot.git
-    cd GeminiDiscordBot
-    ```
-
-2.  **Install Dependencies:**
-    ```bash
-    npm install
-    ```
-
-3.  **Set up Environment Variables:**
-    Create a file named `.env` in the root directory with the following content (or modify `ai_bot.env`):
-    ```
-    DISCORD_BOT_TOKEN=YOUR_DISCORD_BOT_TOKEN
-    GEMINI_API_KEY=YOUR_GEMINI_API_KEY
-    ```
-    -   `YOUR_DISCORD_BOT_TOKEN`: Get this from the [Discord Developer Portal](https://discord.com/developers/applications).
-    -   `YOUR_GEMINI_API_KEY`: Obtain your API key from the [Google AI Studio](https://ai.google.dev/).
-
-4.  **Run the Bot:**
-    ```bash
-    npm start
-    ```
-
-## 📖 Usage
-
-Once the bot is running and added to your Discord server:
-
--   **Invite the Bot:** Ensure the bot has the necessary permissions and is invited to your server.
--   **Grant Roles:** Assign the `Admin` role to administrators and the `botAccess` role to users who should be able to use general bot commands.
--   **Start Interacting:** Use the slash commands (`/`) or the `!chat` command in your Discord channels. 
-
-Enjoy enhancing your Discord server with Sentinel!

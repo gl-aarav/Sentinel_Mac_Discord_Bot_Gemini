@@ -104,7 +104,27 @@ app.get("/api/commands", (req, res) => {
     },
     {
       name: "/verify",
-      description: "Adds the 'Students' role to a user.",
+      description: "Adds a specified role to a user.",
+      admin: true,
+    },
+    {
+      name: "/setwelcomechannel",
+      description: "Set the channel where welcome messages are sent.",
+      admin: true,
+    },
+    {
+      name: "/setverifychannel",
+      description: "Set the channel where users should verify.",
+      admin: true,
+    },
+    {
+      name: "/sendwelcomemessage",
+      description: "Send a sample welcome message to a specific channel.",
+      admin: true,
+    },
+    {
+      name: "/getconfig",
+      description: "View the current bot configuration for this server.",
       admin: true,
     },
     {
@@ -155,7 +175,7 @@ app.get("/api/commands", (req, res) => {
     {
       name: "/summarize",
       description: "Summarizes a specified number of recent messages.",
-      admin: true,
+      admin: false,
     },
     {
       name: "/askquestion",
@@ -245,7 +265,7 @@ const ADMIN_ROLE = "Admin";
 const BOT_ACCESS_ROLE = "botAccess";
 
 // Default AI context
-let contextPrompt = "You are a helpful assistant that provides concise initial answers. This is a Machine Learning club and any other topic than machine learning is discouraged. You should be extra polite and if people go off topic make a sentence that is friendly saying that the topic should be about machine learning only. Use emojis if necessary. Always make sure people don’t get offended. If a person is off topic try not to ask a follow up question.";
+let contextPrompt = "";
 
 const SLASH_COMMANDS = [
   new SlashCommandBuilder()
@@ -382,10 +402,15 @@ const SLASH_COMMANDS = [
     .toJSON(),
   new SlashCommandBuilder()
     .setName("verify")
-    .setDescription("Adds the 'Students' role to a user.")
+    .setDescription("Adds a specified role to a user.")
     .addUserOption(option =>
-      option.setName("usr")
+      option.setName("user")
         .setDescription("The user to add the role to.")
+        .setRequired(true)
+    )
+    .addRoleOption(option =>
+      option.setName("role")
+        .setDescription("The role to assign to the user.")
         .setRequired(true)
     )
     .toJSON(),
@@ -580,6 +605,40 @@ const SLASH_COMMANDS = [
     .setName("randomfact")
     .setDescription("Gets a random fun fact.")
     .toJSON(),
+  new SlashCommandBuilder()
+    .setName("setwelcomechannel")
+    .setDescription("Set the channel where welcome messages are sent (Admin only).")
+    .addChannelOption(option =>
+      option.setName("channel")
+        .setDescription("The channel to send welcome messages to.")
+        .setRequired(true)
+        .addChannelTypes(ChannelType.GuildText)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("sendwelcomemessage")
+    .setDescription("Send a sample welcome message to a specific channel (Admin only).")
+    .addChannelOption(option =>
+      option.setName("channel")
+        .setDescription("The channel to send the sample welcome message to.")
+        .setRequired(true)
+        .addChannelTypes(ChannelType.GuildText)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("setverifychannel")
+    .setDescription("Set the channel where users should verify (Admin only).")
+    .addChannelOption(option =>
+      option.setName("channel")
+        .setDescription("The verification channel.")
+        .setRequired(true)
+        .addChannelTypes(ChannelType.GuildText)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("getconfig")
+    .setDescription("View the current bot configuration for this server (Admin only).")
+    .toJSON(),
 ];
 
 // ==================== Helpers ====================
@@ -746,7 +805,11 @@ Moderation (Admin Only):
 /deletechannel <#channel>      → Delete a text channel
 /createprivatechannel <user>   → Private channel for a user + Admins
 /senddm <user> <message>       → Send a DM to a user
-/verify usr                    → Add the "Students" role to a user \`\`\`
+/verify <user> <role>          → Add a role to a user
+/setwelcomechannel <channel>   → Set welcome message channel
+/setverifychannel <channel>    → Set verify channel for DMs
+/sendwelcomemessage <channel>  → Send sample welcome message
+/getconfig                     → View current bot configuration \`\`\`
 
 \`\`\`Utility & Fun (Bot Access or Admin):
 !help                          → Show this help message
@@ -776,7 +839,7 @@ Moderation (Admin Only):
   }
 
   // Admin-only slash commands
-  const adminCommands = ["setcontext", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "delete", "deleteall", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify"];
+  const adminCommands = ["setcontext", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "delete", "deleteall", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify", "setwelcomechannel", "setverifychannel", "sendwelcomemessage", "getconfig"];
   if (adminCommands.includes(interaction.commandName) && !isUserAdmin) {
     return interaction.reply({ content: "❌ You don't have permission to use this command.", flags: [MessageFlags.Ephemeral] });
   }
@@ -1014,20 +1077,22 @@ Moderation (Admin Only):
       }
     }
     case "verify": {
-      const member = interaction.options.getMember("usr");
-      const roleName = "Students";
-      const role = interaction.guild.roles.cache.find(r => r.name === roleName);
+      const member = interaction.options.getMember("user");
+      const role = interaction.options.getRole("role");
       if (!role) {
-        await interaction.reply({ content: `❌ Role "**${roleName}**" not found.`, flags: [MessageFlags.Ephemeral] });
+        await interaction.reply({ content: `❌ Role not found.`, flags: [MessageFlags.Ephemeral] });
         return;
       }
       if (!member) {
         await interaction.reply({ content: `❌ User not found.`, flags: [MessageFlags.Ephemeral] });
         return;
       }
+      if (interaction.member.roles.highest.comparePositionTo(role) <= 0) {
+        return interaction.reply({ content: "❌ You cannot assign a role higher or equal to your own.", flags: [MessageFlags.Ephemeral] });
+      }
       try {
         await member.roles.add(role);
-        await interaction.reply({ content: `✅ Added the "**Students**" role to ${member.user.username}.` });
+        await interaction.reply({ content: `✅ Added the **${role.name}** role to ${member.user.username}.` });
       } catch (err) {
         console.error(err);
         await interaction.reply({ content: `❌ Failed to add the role to ${member.user.username}.`, flags: [MessageFlags.Ephemeral] });
@@ -1297,6 +1362,101 @@ Moderation (Admin Only):
       interaction.reply(`💡 **Random Fact:** ${fact}`);
       break;
     }
+    case "setwelcomechannel": {
+      const channel = interaction.options.getChannel("channel");
+      const config = getGuildConfig(interaction.guild.id);
+      config.welcomeChannelId = channel.id;
+      await saveGuildConfigs();
+      return interaction.reply({ content: `✅ Welcome channel set to ${channel}.`, flags: [MessageFlags.Ephemeral] });
+    }
+    case "setverifychannel": {
+      const channel = interaction.options.getChannel("channel");
+      const config = getGuildConfig(interaction.guild.id);
+      config.verifyChannelId = channel.id;
+      await saveGuildConfigs();
+      return interaction.reply({ content: `✅ Verify channel set to ${channel}. New members will be told to verify there.`, flags: [MessageFlags.Ephemeral] });
+    }
+    case "sendwelcomemessage": {
+      const channel = interaction.options.getChannel("channel");
+      const config = getGuildConfig(interaction.guild.id);
+      const verifyChannelId = config.verifyChannelId;
+      const verifyChannelMention = verifyChannelId ? `<#${verifyChannelId}>` : '#verify';
+
+      const sampleWelcomeMessage = `Welcome to **${interaction.guild.name}**! You are the ${interaction.guild.memberCount}th member!
+
+To learn more about the club go to: https://tinyurl.com/mlatmv2025
+
+Please verify at ${verifyChannelMention}. Enter your first and last name as well as your grade to get verified!
+
+Ex: 
+Name: Aarav Goyal
+Grade: 10`;
+
+      try {
+        await channel.send({
+          content: `👋 Welcome to the server, @SampleUser!`,
+          embeds: [{
+            color: 0x00ff00,
+            title: `Welcome to ${interaction.guild.name}, SampleUser!`,
+            description: sampleWelcomeMessage,
+            fields: [
+              {
+                name: 'Member Count',
+                value: `${interaction.guild.memberCount}`,
+                inline: true
+              },
+              {
+                name: 'Sample Message',
+                value: 'This is a preview of the welcome message',
+                inline: true
+              }
+            ],
+            timestamp: new Date(),
+            footer: {
+              text: `Sample Welcome Message`
+            }
+          }]
+        });
+        return interaction.reply({ content: `✅ Sample welcome message sent to ${channel}.`, flags: [MessageFlags.Ephemeral] });
+      } catch (err) {
+        console.error(err);
+        return interaction.reply({ content: "❌ Failed to send sample welcome message.", flags: [MessageFlags.Ephemeral] });
+      }
+    }
+    case "getconfig": {
+      const config = getGuildConfig(interaction.guild.id);
+      const welcomeChannel = config.welcomeChannelId ? `<#${config.welcomeChannelId}>` : "Not set";
+      const verifyChannel = config.verifyChannelId ? `<#${config.verifyChannelId}>` : "Not set";
+
+      const embed = {
+        color: 0x0099ff,
+        title: `🔧 Bot Configuration for ${interaction.guild.name}`,
+        fields: [
+          {
+            name: "Welcome Channel",
+            value: welcomeChannel,
+            inline: false
+          },
+          {
+            name: "Verify Channel",
+            value: verifyChannel,
+            inline: false
+          },
+          {
+            name: "AI Context",
+            value: contextPrompt || "(Empty - no default context set)",
+            inline: false
+          }
+        ],
+        footer: {
+          text: `Requested by ${interaction.user.tag}`,
+          icon_url: interaction.user.displayAvatarURL({ dynamic: true })
+        },
+        timestamp: new Date()
+      };
+
+      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+    }
   }
 });
 
@@ -1304,12 +1464,14 @@ Moderation (Admin Only):
 const fs = require('fs');
 const fsp = fs.promises;
 
-// Persistent storage for welcomed members
+// Persistent storage for welcomed members and guild configs
 const WELCOME_FILE = path.join(__dirname, 'welcome_logs.json');
+const CONFIG_FILE = path.join(__dirname, 'guild_config.json');
 const WELCOME_COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours cooldown
 
 // Load welcome logs from file
 let welcomeLogs = {};
+let guildConfigs = {};
 
 async function loadWelcomeLogs() {
   try {
@@ -1333,22 +1495,53 @@ async function saveWelcomeLogs() {
   }
 }
 
+async function loadGuildConfigs() {
+  try {
+    const data = await fsp.readFile(CONFIG_FILE, 'utf8');
+    guildConfigs = JSON.parse(data);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      guildConfigs = {};
+    } else {
+      console.error('Error loading guild configs:', error);
+    }
+  }
+}
+
+async function saveGuildConfigs() {
+  try {
+    await fsp.writeFile(CONFIG_FILE, JSON.stringify(guildConfigs, null, 2));
+  } catch (error) {
+    console.error('Error saving guild configs:', error);
+  }
+}
+
+function getGuildConfig(guildId) {
+  if (!guildConfigs[guildId]) {
+    guildConfigs[guildId] = {
+      welcomeChannelId: null,
+      verifyChannelId: null
+    };
+  }
+  return guildConfigs[guildId];
+}
+
 // Clean up old entries (older than 7 days)
 async function cleanupWelcomeLogs() {
   const now = Date.now();
   const weekAgo = now - (7 * 24 * 60 * 60 * 1000);
-  
+
   for (const [key, timestamp] of Object.entries(welcomeLogs)) {
     if (timestamp < weekAgo) {
       delete welcomeLogs[key];
     }
   }
-  
+
   await saveWelcomeLogs();
 }
 
 // Initialize
-loadWelcomeLogs().then(() => {
+Promise.all([loadWelcomeLogs(), loadGuildConfigs()]).then(() => {
   // Clean up on startup and then every 24 hours
   cleanupWelcomeLogs();
   setInterval(cleanupWelcomeLogs, 24 * 60 * 60 * 1000);
@@ -1357,7 +1550,9 @@ loadWelcomeLogs().then(() => {
 // Handle member leaving the server
 client.on('guildMemberRemove', async (member) => {
   try {
-    const leaveChannel = member.guild.channels.cache.get('1404486672581656577');
+    const config = getGuildConfig(member.guild.id);
+    const channelId = config.welcomeChannelId;
+    const leaveChannel = channelId ? member.guild.channels.cache.get(channelId) : null;
     if (leaveChannel) {
       await leaveChannel.send({
         embeds: [{
@@ -1382,23 +1577,27 @@ client.on('guildMemberRemove', async (member) => {
 client.on('guildMemberAdd', async (member) => {
   const memberKey = `${member.guild.id}-${member.id}`;
   const now = Date.now();
-  
+
   // Check if we've processed this member recently
   if (welcomeLogs[memberKey] && (now - welcomeLogs[memberKey] < WELCOME_COOLDOWN)) {
     return; // Skip if already welcomed within cooldown period
   }
-  
+
   // Update welcome timestamp
   welcomeLogs[memberKey] = now;
   await saveWelcomeLogs();
-  
+
   try {
+    const config = getGuildConfig(member.guild.id);
+    const verifyChannelId = config.verifyChannelId;
+    const verifyChannelMention = verifyChannelId ? `<#${verifyChannelId}>` : '#verify';
+
     // Create the welcome message with the requested format
     const welcomeMessage = `Welcome to **${member.guild.name}**! You are the ${member.guild.memberCount}th member!
 
 To learn more about the club go to: https://tinyurl.com/mlatmv2025
 
-Enter your first and last name in <#1412627604577587285> as well as your grade to get verified!
+Please verify at ${verifyChannelMention}. Enter your first and last name as well as your grade to get verified!
 
 Ex: 
 Name: Aarav Goyal
@@ -1409,8 +1608,9 @@ Grade: 10`;
       console.error(`Could not send DM to ${member.user.tag}:`, error);
     });
 
-    // Send welcome message to the specified channel
-    const welcomeChannel = member.guild.channels.cache.get('1404486672581656577');
+    // Send welcome message to the configured channel
+    const welcomeChannelId = config.welcomeChannelId;
+    const welcomeChannel = welcomeChannelId ? member.guild.channels.cache.get(welcomeChannelId) : null;
     if (welcomeChannel) {
       await welcomeChannel.send({
         content: `👋 Welcome to the server, ${member}!`,
@@ -1508,7 +1708,11 @@ Moderation (Admin Only):
 /deletechannel <#channel>      → Delete a text channel
 /createprivatechannel <user>   → Private channel for a user + Admins
 /senddm <user> <message>       → Send a DM to a user
-/verify usr                    → Add the "Students" role to a user
+/verify <user> <role>          → Add a role to a user
+/setwelcomechannel <channel>   → Set welcome message channel
+/setverifychannel <channel>    → Set verify channel for DMs
+/sendwelcomemessage <channel>  → Send sample welcome message
+/getconfig                     → View current bot configuration
 
 Utility & Fun (Bot Access or Admin):
 !help                          → Show this help message
