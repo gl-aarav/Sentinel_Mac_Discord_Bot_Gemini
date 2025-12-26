@@ -118,6 +118,11 @@ app.get("/api/commands", (req, res) => {
       admin: true,
     },
     {
+      name: "/setdeletedchannel",
+      description: "Set the channel where deleted messages are logged.",
+      admin: true,
+    },
+    {
       name: "/sendwelcomemessage",
       description: "Send a sample welcome message to a specific channel.",
       admin: true,
@@ -220,6 +225,11 @@ app.get("/api/commands", (req, res) => {
     {
       name: "/randomfact",
       description: "Gets a random fun fact.",
+      admin: false,
+    },
+    {
+      name: "/viewdeleted",
+      description: "View deleted messages from a specified channel.",
       admin: false,
     },
   ];
@@ -606,6 +616,21 @@ const SLASH_COMMANDS = [
     .setDescription("Gets a random fun fact.")
     .toJSON(),
   new SlashCommandBuilder()
+    .setName("viewdeleted")
+    .setDescription("View deleted messages from a specified channel.")
+    .addChannelOption(option =>
+      option.setName("channel")
+        .setDescription("The channel to view deleted messages from (defaults to none).")
+        .setRequired(false)
+        .addChannelTypes(ChannelType.GuildText)
+    )
+    .addIntegerOption(option =>
+      option.setName("count")
+        .setDescription("Number of deleted messages to show (1-50, default: 10)")
+        .setRequired(false)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
     .setName("setwelcomechannel")
     .setDescription("Set the channel where welcome messages are sent (Admin only).")
     .addChannelOption(option =>
@@ -631,6 +656,16 @@ const SLASH_COMMANDS = [
     .addChannelOption(option =>
       option.setName("channel")
         .setDescription("The verification channel.")
+        .setRequired(true)
+        .addChannelTypes(ChannelType.GuildText)
+    )
+    .toJSON(),
+  new SlashCommandBuilder()
+    .setName("setdeletedchannel")
+    .setDescription("Set the channel where deleted messages are logged (Admin only).")
+    .addChannelOption(option =>
+      option.setName("channel")
+        .setDescription("The channel to log deleted messages to.")
         .setRequired(true)
         .addChannelTypes(ChannelType.GuildText)
     )
@@ -808,6 +843,7 @@ Moderation (Admin Only):
 /verify <user> <role>          → Add a role to a user
 /setwelcomechannel <channel>   → Set welcome message channel
 /setverifychannel <channel>    → Set verify channel for DMs
+/setdeletedchannel <channel>   → Set channel for deleted message logs
 /sendwelcomemessage <channel>  → Send sample welcome message
 /getconfig                     → View current bot configuration \`\`\`
 
@@ -839,7 +875,7 @@ Moderation (Admin Only):
   }
 
   // Admin-only slash commands
-  const adminCommands = ["setcontext", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "delete", "deleteall", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify", "setwelcomechannel", "setverifychannel", "sendwelcomemessage", "getconfig"];
+  const adminCommands = ["setcontext", "kick", "ban", "timeout", "untimeout", "warn", "nick", "slowmode", "lock", "unlock", "delete", "deleteall", "addrole", "removerole", "createrole", "deleterole", "renamerole", "createchannel", "deletechannel", "createprivatechannel", "senddm", "verify", "setwelcomechannel", "setverifychannel", "setdeletedchannel", "sendwelcomemessage", "getconfig"];
   if (adminCommands.includes(interaction.commandName) && !isUserAdmin) {
     return interaction.reply({ content: "❌ You don't have permission to use this command.", flags: [MessageFlags.Ephemeral] });
   }
@@ -1348,6 +1384,69 @@ Moderation (Admin Only):
       interaction.reply(`🎱 **${question}**\n${response}`);
       break;
     }
+    case "viewdeleted": {
+      const targetChannel = interaction.options.getChannel("channel");
+      const count = interaction.options.getInteger("count") || 10;
+
+      // If no channel specified, show error
+      if (!targetChannel) {
+        return interaction.reply({
+          content: "❌ Please specify a channel to view deleted messages from using the `channel` option.",
+          flags: [MessageFlags.Ephemeral]
+        });
+      }
+
+      // Validate count
+      if (count < 1 || count > 50) {
+        return interaction.reply({
+          content: "❌ Count must be between 1 and 50.",
+          flags: [MessageFlags.Ephemeral]
+        });
+      }
+
+      const channelId = targetChannel.id;
+      const deleted = deletedMessages.get(channelId) || [];
+
+      if (deleted.length === 0) {
+        return interaction.reply({
+          content: `❌ No deleted messages found for ${targetChannel}.`,
+          flags: [MessageFlags.Ephemeral]
+        });
+      }
+
+      // Get the requested number of messages
+      const messagesToShow = deleted.slice(0, Math.min(count, deleted.length));
+
+      // Create embed
+      const embed = {
+        color: 0xff6b6b,
+        title: `🗑️ Deleted Messages in ${targetChannel.name}`,
+        description: `Showing ${messagesToShow.length} of ${deleted.length} deleted message(s)`,
+        fields: messagesToShow.map((msg, idx) => {
+          let value = `**Author:** ${msg.author}\n**Content:** ${msg.content.substring(0, 200)}${msg.content.length > 200 ? '...' : ''}`;
+          if (msg.attachments.length > 0) {
+            value += `\n**Attachments:** ${msg.attachments.map(a => a.name).join(', ')}`;
+          }
+          if (msg.embeds > 0) {
+            value += `\n**Embeds:** ${msg.embeds}`;
+          }
+          value += `\n**Deleted:** <t:${Math.floor(msg.deletedAt.getTime() / 1000)}:R>`;
+
+          return {
+            name: `Message ${idx + 1}`,
+            value: value,
+            inline: false
+          };
+        }),
+        footer: {
+          text: `Requested by ${interaction.user.tag}`,
+          icon_url: interaction.user.displayAvatarURL({ dynamic: true })
+        },
+        timestamp: new Date(),
+      };
+
+      return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+    }
     case "randomfact": {
       const facts = [
         "A group of flamingos is called a 'flamboyance'.",
@@ -1375,6 +1474,13 @@ Moderation (Admin Only):
       config.verifyChannelId = channel.id;
       await saveGuildConfigs();
       return interaction.reply({ content: `✅ Verify channel set to ${channel}. New members will be told to verify there.`, flags: [MessageFlags.Ephemeral] });
+    }
+    case "setdeletedchannel": {
+      const channel = interaction.options.getChannel("channel");
+      const config = getGuildConfig(interaction.guild.id);
+      config.deletedChannelId = channel.id;
+      await saveGuildConfigs();
+      return interaction.reply({ content: `✅ Deleted messages will now be logged to ${channel}.`, flags: [MessageFlags.Ephemeral] });
     }
     case "sendwelcomemessage": {
       const channel = interaction.options.getChannel("channel");
@@ -1427,6 +1533,7 @@ Grade: 10`;
       const config = getGuildConfig(interaction.guild.id);
       const welcomeChannel = config.welcomeChannelId ? `<#${config.welcomeChannelId}>` : "Not set";
       const verifyChannel = config.verifyChannelId ? `<#${config.verifyChannelId}>` : "Not set";
+      const deletedChannel = config.deletedChannelId ? `<#${config.deletedChannelId}>` : "Not set";
 
       const embed = {
         color: 0x0099ff,
@@ -1440,6 +1547,11 @@ Grade: 10`;
           {
             name: "Verify Channel",
             value: verifyChannel,
+            inline: false
+          },
+          {
+            name: "Deleted Messages Log Channel",
+            value: deletedChannel,
             inline: false
           },
           {
@@ -1472,6 +1584,10 @@ const WELCOME_COOLDOWN = 24 * 60 * 60 * 1000; // 24 hours cooldown
 // Load welcome logs from file
 let welcomeLogs = {};
 let guildConfigs = {};
+
+// Storage for deleted messages (in-memory, max 100 per channel)
+const deletedMessages = new Map(); // channelId -> array of deleted message objects
+const MAX_DELETED_MESSAGES_PER_CHANNEL = 100;
 
 async function loadWelcomeLogs() {
   try {
@@ -1520,7 +1636,8 @@ function getGuildConfig(guildId) {
   if (!guildConfigs[guildId]) {
     guildConfigs[guildId] = {
       welcomeChannelId: null,
-      verifyChannelId: null
+      verifyChannelId: null,
+      deletedChannelId: null
     };
   }
   return guildConfigs[guildId];
@@ -1545,6 +1662,105 @@ Promise.all([loadWelcomeLogs(), loadGuildConfigs()]).then(() => {
   // Clean up on startup and then every 24 hours
   cleanupWelcomeLogs();
   setInterval(cleanupWelcomeLogs, 24 * 60 * 60 * 1000);
+});
+
+// ==================== Deleted Message Tracking ====================
+client.on('messageDelete', async (message) => {
+  // Skip if message is partial or from a bot
+  if (message.partial || message.author?.bot) return;
+
+  try {
+    const channelId = message.channel.id;
+
+    // Initialize array for this channel if it doesn't exist
+    if (!deletedMessages.has(channelId)) {
+      deletedMessages.set(channelId, []);
+    }
+
+    const channelDeleted = deletedMessages.get(channelId);
+
+    // Store the deleted message info
+    const deletedMsgData = {
+      content: message.content || '[No text content]',
+      author: message.author ? `${message.author.tag} (${message.author.id})` : 'Unknown User',
+      authorAvatar: message.author?.displayAvatarURL({ dynamic: true }),
+      deletedAt: new Date(),
+      messageId: message.id,
+      attachments: message.attachments.size > 0 ?
+        message.attachments.map(a => ({ name: a.name, url: a.url })) : [],
+      embeds: message.embeds.length > 0 ? message.embeds.length : 0,
+    };
+
+    channelDeleted.unshift(deletedMsgData);
+
+    // Keep only the most recent MAX_DELETED_MESSAGES_PER_CHANNEL messages
+    if (channelDeleted.length > MAX_DELETED_MESSAGES_PER_CHANNEL) {
+      channelDeleted.pop();
+    }
+
+    // Send to configured deleted messages channel if set
+    const config = getGuildConfig(message.guild.id);
+    if (config.deletedChannelId) {
+      const logChannel = message.guild.channels.cache.get(config.deletedChannelId);
+      if (logChannel) {
+        const embed = {
+          color: 0xff6b6b,
+          title: '🗑️ Message Deleted',
+          fields: [
+            {
+              name: 'Author',
+              value: deletedMsgData.author,
+              inline: true
+            },
+            {
+              name: 'Channel',
+              value: `<#${channelId}>`,
+              inline: true
+            },
+            {
+              name: 'Message ID',
+              value: deletedMsgData.messageId,
+              inline: true
+            },
+            {
+              name: 'Content',
+              value: deletedMsgData.content.length > 1024 ?
+                deletedMsgData.content.substring(0, 1021) + '...' :
+                deletedMsgData.content,
+              inline: false
+            }
+          ],
+          thumbnail: deletedMsgData.authorAvatar ? { url: deletedMsgData.authorAvatar } : undefined,
+          timestamp: deletedMsgData.deletedAt,
+          footer: {
+            text: 'Deleted at'
+          }
+        };
+
+        // Add attachments field if any
+        if (deletedMsgData.attachments.length > 0) {
+          embed.fields.push({
+            name: 'Attachments',
+            value: deletedMsgData.attachments.map(a => `[${a.name}](${a.url})`).join('\n'),
+            inline: false
+          });
+        }
+
+        // Add embeds count if any
+        if (deletedMsgData.embeds > 0) {
+          embed.fields.push({
+            name: 'Embeds',
+            value: `${deletedMsgData.embeds} embed(s)`,
+            inline: false
+          });
+        }
+
+        await logChannel.send({ embeds: [embed] });
+      }
+    }
+  } catch (error) {
+    console.error('Error tracking deleted message:', error);
+  }
 });
 
 // Handle member leaving the server
@@ -1711,6 +1927,7 @@ Moderation (Admin Only):
 /verify <user> <role>          → Add a role to a user
 /setwelcomechannel <channel>   → Set welcome message channel
 /setverifychannel <channel>    → Set verify channel for DMs
+/setdeletedchannel <channel>   → Set channel for deleted message logs
 /sendwelcomemessage <channel>  → Send sample welcome message
 /getconfig                     → View current bot configuration
 
